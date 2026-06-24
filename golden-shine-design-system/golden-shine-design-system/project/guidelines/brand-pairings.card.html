@@ -1,0 +1,29 @@
+<!-- @dsCard group="Brand" viewport="700x200" name="Color pairings" subtitle="How navy, coral and cream combine" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin:0; padding:18px; background:var(--surface-card); font-family:var(--font-body); display:flex; gap:14px; }
+  .tile { flex:1; height:150px; border-radius:var(--radius-lg); padding:16px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:var(--shadow-sm); }
+  .tile .k { font-family:var(--font-display); font-weight:700; font-size:18px; }
+  .tile .s { font-size:12px; opacity:0.85; }
+  .navy { background:var(--navy-700); color:var(--cream-100); }
+  .navy .s { color:var(--navy-200); }
+  .coral { background:var(--coral-500); color:var(--cream-100); }
+  .cream { background:var(--cream-200); color:var(--navy-800); }
+  .cream .s { color:var(--navy-600); }
+  .pill { align-self:flex-start; font-family:var(--font-display); font-weight:600; font-size:12px; padding:6px 14px; border-radius:var(--radius-pill); }
+</style></head>
+<body>
+  <div class="tile navy">
+    <div><div class="k">Navy ground</div><div class="s">Headers, footers, trust</div></div>
+    <span class="pill" style="background:var(--coral-500);color:var(--cream-100)">Coral CTA</span>
+  </div>
+  <div class="tile coral">
+    <div><div class="k">Coral accent</div><div class="s">Buttons, highlights, energy</div></div>
+    <span class="pill" style="background:var(--cream-100);color:var(--coral-600)">Cream label</span>
+  </div>
+  <div class="tile cream">
+    <div><div class="k">Cream warmth</div><div class="s">Sections, cards, calm</div></div>
+    <span class="pill" style="background:var(--navy-700);color:var(--cream-100)">Navy label</span>
+  </div>
+</body></html>

@@ -1,0 +1,33 @@
+<!-- @dsCard group="Spacing" viewport="700x200" name="Radius & shadow" subtitle="Rounded corners and soft navy-tinted elevation" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin:0; padding:22px 24px; background:var(--surface-page); font-family:var(--font-body); display:flex; gap:28px; align-items:center; flex-wrap:wrap; }
+  .group { display:flex; gap:14px; align-items:flex-end; }
+  .box { width:60px; height:60px; background:var(--white); border:1px solid var(--border-subtle); display:flex; align-items:flex-end; justify-content:center; }
+  .box span { font-size:10px; color:var(--text-muted); padding-bottom:4px; }
+  .r-sm{border-radius:var(--radius-sm)}.r-md{border-radius:var(--radius-md)}.r-lg{border-radius:var(--radius-lg)}.r-xl{border-radius:var(--radius-xl)}.r-pill{border-radius:var(--radius-pill)}
+  .e-sm{box-shadow:var(--shadow-sm);border:none}.e-md{box-shadow:var(--shadow-md);border:none}.e-lg{box-shadow:var(--shadow-lg);border:none}.e-coral{box-shadow:var(--shadow-coral);border:none}
+  .cap { font-size:11px; color:var(--text-strong); font-weight:700; width:100%; margin-bottom:-4px; }
+</style></head>
+<body>
+  <div>
+    <div class="cap">Radius</div>
+    <div class="group">
+      <div class="box r-sm"><span>sm</span></div>
+      <div class="box r-md"><span>md</span></div>
+      <div class="box r-lg"><span>lg</span></div>
+      <div class="box r-xl"><span>xl</span></div>
+      <div class="box r-pill"><span>pill</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="cap">Shadow</div>
+    <div class="group">
+      <div class="box r-md e-sm"><span>sm</span></div>
+      <div class="box r-md e-md"><span>md</span></div>
+      <div class="box r-md e-lg"><span>lg</span></div>
+      <div class="box r-md e-coral"><span>coral</span></div>
+    </div>
+  </div>
+</body></html>
