@@ -1,6 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Administradores autorizados del panel. Mantener en sync con
+    // VITE_ADMIN_EMAILS (app/.env). El login del panel es con Google.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['info@edenstudio.dev'];
+    }
+
     match /solicitudes/{id} {
 
       // Crear: público, pero validado. El formulario nunca define un estado
@@ -18,8 +27,8 @@ service cloud.firestore {
         request.resource.data.fechaDeseada is string &&
         request.resource.data.horaDeseada is string;
 
-      // Leer / actualizar: solo personal autenticado (panel administrativo).
-      allow read, update: if request.auth != null;
+      // Leer / actualizar: solo administradores autorizados (panel).
+      allow read, update: if isAdmin();
 
       // Nunca borrar desde el cliente.
       allow delete: if false;

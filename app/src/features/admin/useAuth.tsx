@@ -1,18 +1,38 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  GoogleAuthProvider,
   browserLocalPersistence,
   onAuthStateChanged,
   setPersistence,
-  signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   type User,
 } from "firebase/auth";
 import { auth } from "@/firebase";
 
+// Lista blanca de administradores. Debe mantenerse en sync con `firestore.rules`
+// (la regla es la frontera de seguridad real; esto es para la UX del panel).
+const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "info@edenstudio.dev")
+  .split(",")
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+
+export function isAdminEmail(email?: string | null): boolean {
+  return !!email && ADMIN_EMAILS.includes(email.toLowerCase());
+}
+
 interface AuthContextValue {
   user: User | null;
+  isAdmin: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -27,29 +47,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    const unsub = onAuthStateChanged(auth, (u) => {
+    return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
     });
-    return unsub;
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const loginWithGoogle = async () => {
     if (!auth) {
       throw new Error("Firebase no está configurado. Define las variables VITE_FIREBASE_* en .env.");
     }
-    // Sesión persistente entre recargas.
     await setPersistence(auth, browserLocalPersistence);
-    await signInWithEmailAndPassword(auth, email, password);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    const cred = await signInWithPopup(auth, provider);
+
+    // Solo cuentas autorizadas pueden quedar con sesión iniciada.
+    if (!isAdminEmail(cred.user.email)) {
+      await signOut(auth);
+      const err = new Error("Tu cuenta no está autorizada para el panel.");
+      err.name = "NotAuthorized";
+      throw err;
+    }
   };
 
   const logout = async () => {
     if (auth) await signOut(auth);
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>
+  const value = useMemo<AuthContextValue>(
+    () => ({ user, isAdmin: isAdminEmail(user?.email), loading, loginWithGoogle, logout }),
+    [user, loading],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
