@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /solicitudes/{id} {
+
+      // Crear: público, pero validado. El formulario nunca define un estado
+      // distinto de "pendiente", y los campos obligatorios deben venir con tipo
+      // correcto. Esta es la última línea de defensa (además de zod en cliente).
+      allow create: if
+        request.resource.data.estado == "pendiente" &&
+        request.resource.data.tipoServicio in ["residencial", "comercial", "profunda"] &&
+        request.resource.data.nombre is string &&
+        request.resource.data.nombre.size() > 0 &&
+        request.resource.data.telefono is string &&
+        request.resource.data.telefono.size() >= 8 &&
+        request.resource.data.direccion is string &&
+        request.resource.data.direccion.size() > 0 &&
+        request.resource.data.fechaDeseada is string &&
+        request.resource.data.horaDeseada is string;
+
+      // Leer / actualizar: solo personal autenticado (panel administrativo).
+      allow read, update: if request.auth != null;
+
+      // Nunca borrar desde el cliente.
+      allow delete: if false;
+    }
+  }
+}

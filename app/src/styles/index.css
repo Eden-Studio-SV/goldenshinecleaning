@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white font-sans text-gray-700 antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-bold tracking-tight text-navy-800;
+  }
+
+  /* Margen de scroll para anclas bajo la navbar fija */
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
+}
+
+@layer components {
+  .container-app {
+    @apply mx-auto w-full max-w-[1200px] px-5 lg:px-8;
+  }
+
+  /* Botones */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-lg font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply bg-brand-500 text-white hover:bg-navy-800 focus-visible:ring-brand-500;
+  }
+  .btn-gold {
+    @apply bg-gold text-navy-900 hover:bg-gold-dark focus-visible:ring-gold;
+  }
+  .btn-outline {
+    @apply border border-brand-500 bg-white text-brand-500 hover:bg-brand-50 focus-visible:ring-brand-500;
+  }
+  .btn-ghost {
+    @apply text-navy-800 hover:bg-brand-50 focus-visible:ring-brand-500;
+  }
+  .btn-sm {
+    @apply h-9 px-3.5 text-sm;
+  }
+  .btn-md {
+    @apply h-11 px-5 text-sm;
+  }
+  .btn-lg {
+    @apply h-14 px-7 text-base;
+  }
+
+  /* Superficies */
+  .card {
+    @apply rounded-2xl border border-gray-200 bg-white shadow-sm;
+  }
+
+  /* Formularios */
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-navy-800;
+  }
+  .input {
+    @apply w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-800 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30;
+  }
+  .input-error {
+    @apply border-red-400 focus:border-red-500 focus:ring-red-500/30;
+  }
+  .field-error {
+    @apply mt-1.5 text-sm text-red-600;
+  }
+}
