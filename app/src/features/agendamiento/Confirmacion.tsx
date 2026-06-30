@@ -1,19 +1,24 @@
 import { Link, Navigate, useLocation } from "react-router-dom";
-import { CheckCircle2, Home, MessageCircle, Info } from "lucide-react";
+import { CheckCircle2, LayoutDashboard, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { TIPOS_SERVICIO, type TipoServicio } from "@/types";
+import {
+  FRECUENCIA_LABEL,
+  TIPOS_SERVICIO,
+  type Frecuencia,
+  type TipoServicio,
+} from "@/types";
 import { CONTACTO } from "@/features/landing/content";
 
 interface Resumen {
   nombre: string;
   tipoServicio: TipoServicio;
+  frecuencia: Frecuencia;
   fechaDeseada: string;
   horaDeseada: string;
 }
 
 interface ConfirmState {
   resumen?: Resumen;
-  demo?: boolean;
 }
 
 function formatearFecha(iso: string): string {
@@ -31,7 +36,7 @@ function formatearFecha(iso: string): string {
 
 export default function Confirmacion() {
   const { state } = useLocation();
-  const { resumen, demo } = (state as ConfirmState | null) ?? {};
+  const { resumen } = (state as ConfirmState | null) ?? {};
 
   // Acceso directo (sin enviar el formulario) → de vuelta a solicitar.
   if (!resumen) {
@@ -58,13 +63,17 @@ export default function Confirmacion() {
           <h1 className="mt-6 text-3xl font-extrabold">¡Solicitud recibida!</h1>
           <p className="mx-auto mt-3 max-w-md text-gray-600">
             Gracias, {resumen.nombre.split(" ")[0]}. Nos pondremos en contacto pronto para confirmar
-            tu limpieza.
+            tu limpieza. Puedes seguir su estado desde tu portal.
           </p>
 
           <dl className="mx-auto mt-8 max-w-sm space-y-3 rounded-xl bg-brand-50 p-5 text-left text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-gray-500">Servicio</dt>
               <dd className="font-semibold text-navy-800">{servicioLabel}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-gray-500">Frecuencia</dt>
+              <dd className="font-semibold text-navy-800">{FRECUENCIA_LABEL[resumen.frecuencia]}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-gray-500">Fecha</dt>
@@ -79,24 +88,17 @@ export default function Confirmacion() {
           </dl>
 
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <a href={`${CONTACTO.whatsappHref}?text=${waMsg}`} target="_blank" rel="noreferrer">
+            <Link to="/portal">
               <Button variant="gold" size="lg" className="w-full sm:w-auto">
-                <MessageCircle className="h-5 w-5" /> Contáctanos por WhatsApp
-              </Button>
-            </a>
-            <Link to="/">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                <Home className="h-5 w-5" /> Volver al inicio
+                <LayoutDashboard className="h-5 w-5" /> Ver mis solicitudes
               </Button>
             </Link>
+            <a href={`${CONTACTO.whatsappHref}?text=${waMsg}`} target="_blank" rel="noreferrer">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                <MessageCircle className="h-5 w-5" /> WhatsApp
+              </Button>
+            </a>
           </div>
-
-          {demo && (
-            <p className="mt-6 inline-flex items-center gap-2 text-xs text-amber-700">
-              <Info className="h-4 w-4" /> Modo demostración: esta solicitud no se guardó (Firebase
-              no conectado).
-            </p>
-          )}
         </div>
       </div>
     </div>

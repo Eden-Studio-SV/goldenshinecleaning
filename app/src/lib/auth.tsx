@@ -16,9 +16,10 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "@/firebase";
+import { upsertCliente } from "@/lib/clientes";
 
 // Lista blanca de administradores. Debe mantenerse en sync con `firestore.rules`
-// (la regla es la frontera de seguridad real; esto es para la UX del panel).
+// (la regla es la frontera de seguridad real; esto es para la UX).
 const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || "info@edenstudio.dev")
   .split(",")
   .map((s) => s.trim().toLowerCase())
@@ -28,11 +29,15 @@ export function isAdminEmail(email?: string | null): boolean {
   return !!email && ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
+/** Rol de la sesión actual. `null` = sin sesión. */
+export type Rol = "admin" | "cliente" | null;
+
 interface AuthContextValue {
   user: User | null;
   isAdmin: boolean;
+  rol: Rol;
   loading: boolean;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: () => Promise<User>;
   logout: () => Promise<void>;
 }
 
@@ -53,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (): Promise<User> => {
     if (!auth) {
       throw new Error("Firebase no está configurado. Define las variables VITE_FIREBASE_* en .env.");
     }
@@ -62,23 +67,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     provider.setCustomParameters({ prompt: "select_account" });
     const cred = await signInWithPopup(auth, provider);
 
-    // Solo cuentas autorizadas pueden quedar con sesión iniciada.
+    // Los clientes mantienen su sesión y obtienen un perfil. Los admins se
+    // distinguen por la lista blanca; no necesitan perfil de cliente.
     if (!isAdminEmail(cred.user.email)) {
-      await signOut(auth);
-      const err = new Error("Tu cuenta no está autorizada para el panel.");
-      err.name = "NotAuthorized";
-      throw err;
+      try {
+        await upsertCliente({
+          uid: cred.user.uid,
+          email: cred.user.email,
+          displayName: cred.user.displayName,
+        });
+      } catch {
+        // El perfil es best-effort; no bloquea el inicio de sesión.
+      }
     }
+    return cred.user;
   };
 
   const logout = async () => {
     if (auth) await signOut(auth);
   };
 
-  const value = useMemo<AuthContextValue>(
-    () => ({ user, isAdmin: isAdminEmail(user?.email), loading, loginWithGoogle, logout }),
-    [user, loading],
-  );
+  const value = useMemo<AuthContextValue>(() => {
+    const isAdmin = isAdminEmail(user?.email);
+    const rol: Rol = !user ? null : isAdmin ? "admin" : "cliente";
+    return { user, isAdmin, rol, loading, loginWithGoogle, logout };
+  }, [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Info } from "lucide-react";
-import { useAuth } from "./useAuth";
+import { useAuth, isAdminEmail } from "@/lib/auth";
 import { isFirebaseConfigured } from "@/firebase";
 import { Spinner } from "@/components/ui/Spinner";
 import { Brand } from "@/components/layout/Brand";
@@ -36,26 +36,25 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const from =
-    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/admin";
+  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+  const destino = from || (isAdmin ? "/admin" : "/portal");
 
-  if (user && isAdmin) return <Navigate to="/admin" replace />;
+  // Ya hay sesión: a su destino.
+  if (user) return <Navigate to={destino} replace />;
 
   const onGoogle = async () => {
     setError(null);
     setBusy(true);
     try {
-      await loginWithGoogle();
-      navigate(from, { replace: true });
+      const u = await loginWithGoogle();
+      navigate(from || (isAdminEmail(u.email) ? "/admin" : "/portal"), { replace: true });
     } catch (e) {
-      const err = e as { name?: string; code?: string; message?: string };
-      if (err?.name === "NotAuthorized") {
-        setError(err.message || "Tu cuenta no está autorizada.");
-      } else if (
+      const err = e as { code?: string };
+      if (
         err?.code === "auth/popup-closed-by-user" ||
         err?.code === "auth/cancelled-popup-request"
       ) {
-        setError(null); // el usuario cerró la ventana; sin ruido
+        setError(null);
       } else if (err?.code === "auth/popup-blocked") {
         setError("El navegador bloqueó la ventana emergente. Permite pop-ups e intenta de nuevo.");
       } else if (err?.code === "auth/network-request-failed") {
@@ -76,9 +75,9 @@ export default function Login() {
         </div>
 
         <div className="card mt-6 p-7">
-          <h1 className="text-center text-xl font-bold text-navy-800">Acceso del personal</h1>
+          <h1 className="text-center text-xl font-bold text-navy-800">Ingresa a tu cuenta</h1>
           <p className="mt-1 text-center text-sm text-gray-500">
-            Ingresa con tu cuenta de Google autorizada.
+            Inicia sesión con Google para solicitar limpiezas y darles seguimiento.
           </p>
 
           {!isFirebaseConfigured && (

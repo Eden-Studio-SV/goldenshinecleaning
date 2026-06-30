@@ -2,33 +2,69 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Administradores autorizados del panel. Mantener en sync con
-    // VITE_ADMIN_EMAILS (app/.env). El login del panel es con Google.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Administradores autorizados (panel). Mantener en sync con VITE_ADMIN_EMAILS.
     function isAdmin() {
-      return request.auth != null
+      return isSignedIn()
         && request.auth.token.email_verified == true
         && request.auth.token.email in ['info@edenstudio.dev'];
     }
 
+    // Perfil del cliente: cada quien gestiona el suyo; el admin puede leer.
+    match /clientes/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
     match /solicitudes/{id} {
 
-      // Crear: público, pero validado. El formulario nunca define un estado
-      // distinto de "pendiente", y los campos obligatorios deben venir con tipo
-      // correcto. Esta es la última línea de defensa (además de zod en cliente).
-      allow create: if
-        request.resource.data.estado == "pendiente" &&
-        request.resource.data.tipoServicio in ["residencial", "comercial", "profunda"] &&
-        request.resource.data.nombre is string &&
-        request.resource.data.nombre.size() > 0 &&
-        request.resource.data.telefono is string &&
-        request.resource.data.telefono.size() >= 8 &&
-        request.resource.data.direccion is string &&
-        request.resource.data.direccion.size() > 0 &&
-        request.resource.data.fechaDeseada is string &&
-        request.resource.data.horaDeseada is string;
+      // Forma válida de una solicitud nueva creada por un cliente.
+      function datosValidos() {
+        return request.resource.data.estado == "pendiente"
+          && request.resource.data.tipoServicio in ["residencial", "comercial", "profunda"]
+          && request.resource.data.frecuencia in ["unica", "semanal", "quincenal", "mensual"]
+          && request.resource.data.nombre is string
+          && request.resource.data.nombre.size() > 0
+          && request.resource.data.telefono is string
+          && request.resource.data.telefono.size() >= 8
+          && request.resource.data.direccion is string
+          && request.resource.data.direccion.size() > 0
+          && request.resource.data.fechaDeseada is string
+          && request.resource.data.horaDeseada is string;
+      }
 
-      // Leer / actualizar: solo administradores autorizados (panel).
-      allow read, update: if isAdmin();
+      // Transiciones que el dueño (cliente) puede hacer sobre su solicitud.
+      // El admin no pasa por aquí (tiene control total).
+      function clienteTransicionOk() {
+        let from = resource.data.estado;
+        let to = request.resource.data.estado;
+        return (from == "pendiente" && to == "cancelada")
+          || (from == "agendada" && (to == "reprogramacion" || to == "cancelada"))
+          || (from == "reprogramacion" && (to == "agendada" || to == "pendiente" || to == "cancelada"));
+      }
+
+      // Crear: el admin (p. ej. la siguiente visita de un plan recurrente) o un
+      // cliente autenticado creando su propia solicitud válida.
+      allow create: if isAdmin()
+        || (isSignedIn()
+            && request.resource.data.clienteId == request.auth.uid
+            && datosValidos());
+
+      // Leer: admin todo; cliente solo lo suyo.
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.clienteId == request.auth.uid);
+
+      // Actualizar: admin sin restricción; el dueño solo según el ciclo de vida
+      // permitido y sin cambiar de dueño.
+      allow update: if isAdmin()
+        || (isSignedIn()
+            && resource.data.clienteId == request.auth.uid
+            && request.resource.data.clienteId == resource.data.clienteId
+            && clienteTransicionOk());
 
       // Nunca borrar desde el cliente.
       allow delete: if false;

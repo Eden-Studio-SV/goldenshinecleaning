@@ -18,7 +18,14 @@ export const solicitudSchema = z.object({
   tipoServicio: z.enum(["residencial", "comercial", "profunda"], {
     errorMap: () => ({ message: "Selecciona un tipo de servicio" }),
   }),
+  frecuencia: z.enum(["unica", "semanal", "quincenal", "mensual"], {
+    errorMap: () => ({ message: "Selecciona una frecuencia" }),
+  }),
   direccion: z.string().trim().min(5, "Ingresa la dirección"),
+  ubicacion: z
+    .object({ lat: z.number(), lng: z.number() })
+    .nullable()
+    .optional(),
   fechaDeseada: z
     .string()
     .min(1, "Selecciona una fecha")
@@ -28,3 +35,15 @@ export const solicitudSchema = z.object({
 });
 
 export type SolicitudFormValues = z.infer<typeof solicitudSchema>;
+
+/** Validación de una propuesta de nueva fecha/hora (reprogramación). */
+export const reprogramarSchema = z.object({
+  fecha: z
+    .string()
+    .min(1, "Selecciona una fecha")
+    .refine((v) => v >= hoyISO(), "La fecha no puede ser anterior a hoy"),
+  hora: z.string().min(1, "Selecciona una hora"),
+  motivo: z.string().max(300, "Máximo 300 caracteres").optional(),
+});
+
+export type ReprogramarFormValues = z.infer<typeof reprogramarSchema>;

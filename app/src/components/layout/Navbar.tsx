@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, UserRound, X } from "lucide-react";
 import { Brand } from "./Brand";
 import { Button } from "@/components/ui/Button";
 import { NAV_LINKS } from "@/features/landing/content";
@@ -26,6 +26,12 @@ export function Navbar() {
                 {l.label}
               </a>
             ))}
+          <Link
+            to="/portal"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 transition hover:text-brand-500"
+          >
+            <UserRound className="h-4 w-4" /> Mi cuenta
+          </Link>
           <Link to="/solicitar">
             <Button variant="gold">Solicitar limpieza</Button>
           </Link>
@@ -56,6 +62,13 @@ export function Navbar() {
                   {l.label}
                 </a>
               ))}
+            <Link
+              to="/portal"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-lg px-2 py-3 text-base font-medium text-gray-700 hover:bg-brand-50"
+            >
+              <UserRound className="h-5 w-5" /> Mi cuenta
+            </Link>
             <Link to="/solicitar" onClick={() => setOpen(false)} className="mt-1">
               <Button variant="gold" size="lg" className="w-full">
                 Solicitar limpieza

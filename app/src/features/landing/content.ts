@@ -34,6 +34,15 @@ export const CONTACTO = {
   },
 };
 
+/**
+ * Centro y zoom por defecto del mapa (Leaflet) en el formulario.
+ * ⚠️ PLACEHOLDER: San Salvador. Ajustar a la zona real de operación.
+ */
+export const MAPA_DEFAULT = {
+  centro: { lat: 13.6929, lng: -89.2182 },
+  zoom: 13,
+};
+
 export const NAV_LINKS: { id: string; label: string }[] = [
   { id: "servicios", label: "Servicios" },
   { id: "como-funciona", label: "Cómo funciona" },

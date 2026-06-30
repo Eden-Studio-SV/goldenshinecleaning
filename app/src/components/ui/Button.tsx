@@ -1,6 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "gold" | "outline" | "ghost";
+type Variant = "primary" | "gold" | "outline" | "ghost" | "peligro" | "exito";
 type Size = "sm" | "md" | "lg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,6 +13,8 @@ const VARIANT: Record<Variant, string> = {
   gold: "btn-gold",
   outline: "btn-outline",
   ghost: "btn-ghost",
+  peligro: "btn-peligro",
+  exito: "btn-exito",
 };
 
 const SIZE: Record<Size, string> = {

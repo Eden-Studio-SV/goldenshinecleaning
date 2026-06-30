@@ -1,16 +1,24 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { ArrowLeft, Send, Info } from "lucide-react";
+import { ArrowLeft, Send, Repeat } from "lucide-react";
 import { solicitudSchema, hoyISO, type SolicitudFormValues } from "@/lib/validators";
 import { crearSolicitud } from "@/lib/solicitudes";
-import { isFirebaseConfigured } from "@/firebase";
-import { TIPOS_SERVICIO, type SolicitudInput, type TipoServicio } from "@/types";
+import { obtenerCliente, guardarTelefonoCliente } from "@/lib/clientes";
+import { useAuth } from "@/lib/auth";
+import {
+  FRECUENCIAS,
+  TIPOS_SERVICIO,
+  type SolicitudInput,
+  type TipoServicio,
+  type Ubicacion,
+} from "@/types";
 import { SERVICIOS, CONTACTO } from "@/features/landing/content";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Spinner } from "@/components/ui/Spinner";
+import { MapaUbicacion } from "@/components/ui/MapaUbicacion";
 
 const ICON_BY_TIPO = Object.fromEntries(SERVICIOS.map((s) => [s.id, s.icon])) as Record<
   TipoServicio,
@@ -20,7 +28,9 @@ const ICON_BY_TIPO = Object.fromEntries(SERVICIOS.map((s) => [s.id, s.icon])) as
 export default function FormularioSolicitud() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const { user } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [ubicacion, setUbicacion] = useState<Ubicacion | null>(null);
 
   const preset = useMemo<TipoServicio | undefined>(() => {
     const p = params.get("servicio");
@@ -31,6 +41,8 @@ export default function FormularioSolicitud() {
     register,
     handleSubmit,
     watch,
+    setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<SolicitudFormValues>({
     resolver: zodResolver(solicitudSchema),
@@ -39,45 +51,70 @@ export default function FormularioSolicitud() {
       telefono: "",
       email: "",
       tipoServicio: preset,
+      frecuencia: "unica",
       direccion: "",
+      ubicacion: null,
       fechaDeseada: "",
       horaDeseada: "",
       notas: "",
     },
   });
 
+  // Prefill con los datos de la cuenta y el perfil del cliente.
+  useEffect(() => {
+    if (!user) return;
+    if (user.displayName) setValue("nombre", user.displayName);
+    if (user.email) setValue("email", user.email);
+    obtenerCliente(user.uid)
+      .then((c) => {
+        if (c?.telefono) setValue("telefono", c.telefono);
+      })
+      .catch(() => undefined);
+  }, [user, setValue]);
+
   const tipo = watch("tipoServicio");
+  const frecuencia = watch("frecuencia");
   const notas = watch("notas") ?? "";
+
+  const onUbicacion = (u: Ubicacion) => {
+    setUbicacion(u);
+    setValue("ubicacion", u, { shouldValidate: false });
+  };
+  const onDireccionDesdeMapa = (texto: string) => {
+    if (!getValues("direccion")?.trim()) setValue("direccion", texto, { shouldValidate: true });
+  };
 
   const onSubmit = async (values: SolicitudFormValues) => {
     setServerError(null);
+    if (!user) {
+      setServerError("Tu sesión expiró. Vuelve a iniciar sesión.");
+      return;
+    }
     const input: SolicitudInput = {
       nombre: values.nombre,
       telefono: values.telefono,
       email: values.email || undefined,
       tipoServicio: values.tipoServicio,
+      frecuencia: values.frecuencia,
       direccion: values.direccion,
+      ubicacion: ubicacion,
       fechaDeseada: values.fechaDeseada,
       horaDeseada: values.horaDeseada,
       notas: values.notas || undefined,
     };
 
     try {
-      if (isFirebaseConfigured) {
-        await crearSolicitud(input);
-      } else {
-        // Modo demo: sin backend todavía. Simula el envío para poder probar el flujo.
-        await new Promise((r) => setTimeout(r, 600));
-      }
+      await crearSolicitud(input, { uid: user.uid, email: user.email ?? "" });
+      guardarTelefonoCliente(user.uid, values.telefono).catch(() => undefined);
       navigate("/solicitud-enviada", {
         state: {
           resumen: {
             nombre: values.nombre,
             tipoServicio: values.tipoServicio,
+            frecuencia: values.frecuencia,
             fechaDeseada: values.fechaDeseada,
             horaDeseada: values.horaDeseada,
           },
-          demo: !isFirebaseConfigured,
         },
       });
     } catch {
@@ -100,21 +137,10 @@ export default function FormularioSolicitud() {
         <div className="mt-4 text-center">
           <h1 className="text-3xl font-extrabold sm:text-4xl">Solicita tu limpieza</h1>
           <p className="mx-auto mt-3 max-w-xl text-gray-600">
-            Completa el formulario y te contactaremos para confirmar la fecha y hora. Toma menos de
-            un minuto.
+            Completa el formulario y te contactaremos para confirmar la fecha y hora. Podrás darle
+            seguimiento desde tu portal.
           </p>
         </div>
-
-        {!isFirebaseConfigured && (
-          <div className="mt-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-            <Info className="mt-0.5 h-5 w-5 shrink-0" />
-            <p>
-              <strong>Modo demostración.</strong> El backend (Firebase) aún no está conectado, por lo
-              que las solicitudes no se guardan. El flujo y la validación funcionan para que puedas
-              probarlos.
-            </p>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="card mt-6 p-6 sm:p-8">
           <div className="grid gap-5">
@@ -157,6 +183,47 @@ export default function FormularioSolicitud() {
               )}
             </div>
 
+            {/* Frecuencia — plan recurrente */}
+            <div>
+              <span className="label">
+                <Repeat className="mr-1 inline h-4 w-4 text-brand-500" />
+                ¿Con qué frecuencia? <span className="text-red-500">*</span>
+              </span>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {FRECUENCIAS.map((opt) => {
+                  const selected = frecuencia === opt.value;
+                  return (
+                    <label
+                      key={opt.value}
+                      className={`cursor-pointer rounded-lg border-2 px-3 py-2.5 text-center text-sm font-semibold transition ${
+                        selected
+                          ? "border-brand-500 bg-brand-50 text-brand-600"
+                          : "border-gray-200 text-gray-600 hover:border-brand-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        value={opt.value}
+                        className="sr-only"
+                        {...register("frecuencia")}
+                      />
+                      {opt.corto}
+                    </label>
+                  );
+                })}
+              </div>
+              {frecuencia && frecuencia !== "unica" && (
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Agendaremos automáticamente la siguiente visita al completar cada limpieza.
+                </p>
+              )}
+              {errors.frecuencia && (
+                <p className="field-error" role="alert">
+                  {errors.frecuencia.message}
+                </p>
+              )}
+            </div>
+
             <div className="grid gap-5 sm:grid-cols-2">
               <Field label="Nombre completo" htmlFor="nombre" required error={errors.nombre?.message}>
                 <input
@@ -181,12 +248,7 @@ export default function FormularioSolicitud() {
               </Field>
             </div>
 
-            <Field
-              label="Correo"
-              htmlFor="email"
-              hint="(opcional)"
-              error={errors.email?.message}
-            >
+            <Field label="Correo" htmlFor="email" hint="(opcional)" error={errors.email?.message}>
               <input
                 id="email"
                 type="email"
@@ -206,6 +268,16 @@ export default function FormularioSolicitud() {
                 {...register("direccion")}
               />
             </Field>
+
+            {/* Ubicación en el mapa (Leaflet) */}
+            <div>
+              <span className="label">Ubicación en el mapa <span className="font-normal text-gray-400">(opcional)</span></span>
+              <MapaUbicacion
+                value={ubicacion}
+                onChange={onUbicacion}
+                onDireccion={onDireccionDesdeMapa}
+              />
+            </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <Field

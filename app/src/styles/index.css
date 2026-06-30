@@ -45,6 +45,12 @@
   .btn-ghost {
     @apply text-navy-800 hover:bg-brand-50 focus-visible:ring-brand-500;
   }
+  .btn-peligro {
+    @apply bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500;
+  }
+  .btn-exito {
+    @apply bg-green-600 text-white hover:bg-green-700 focus-visible:ring-green-500;
+  }
   .btn-sm {
     @apply h-9 px-3.5 text-sm;
   }
