@@ -19,12 +19,23 @@ react-hook-form + zod · Firebase (Firestore + Auth) · lucide-react.
 | Ruta | Módulo |
 |------|--------|
 | `/` | Landing — hero, servicios, cómo funciona, por qué elegirnos, testimonios, cobertura, CTA |
-| `/solicitar` | Formulario de solicitud (escribe en Firestore `solicitudes`) → confirmación |
-| `/admin` | Panel privado (login con Google) — lista en tiempo real + filtro por estado |
-| `/admin/solicitud/:id` | Detalle de solicitud + cambio de estado |
+| `/ingresar` | Login con Google (clientes y admin; el rol se resuelve por la lista blanca) |
+| `/solicitar` | Formulario (requiere sesión): tipo, **frecuencia**, **ubicación en mapa**, fecha/hora → confirmación |
+| `/portal` | Portal del cliente — próximas e historial; cancelar, pedir reprogramación, aceptar/rechazar propuestas |
+| `/admin` | Panel privado — lista en tiempo real + filtro por estado |
+| `/admin/solicitud/:id` | Detalle + acciones (confirmar, rechazar, proponer fecha, completar) |
 
-Código en [`app/src/`](app/src/): `features/landing`, `features/agendamiento`,
-`features/admin`, `components/`, `lib/`, `types/`.
+Código en [`app/src/`](app/src/): `features/landing`, `features/agendamiento`
+(formulario + vistas/acciones compartidas), `features/portal`, `features/admin`,
+`features/auth` (login + guards + `AuthArea`), `components/`, `lib/`, `types/`.
+
+### Ciclo de vida de una solicitud
+
+`pendiente → agendada → completada`, más `reprogramacion` (propuesta de nueva
+fecha/hora **con confirmación** de la otra parte), `rechazada` y `cancelada`.
+La máquina de estados vive en [`app/src/lib/lifecycle.ts`](app/src/lib/lifecycle.ts)
+y la comparten el portal y el panel. Las limpiezas recurrentes (frecuencia ≠
+única) agendan la siguiente visita automáticamente al completar la actual.
 
 ## Desarrollo local
 
@@ -43,12 +54,16 @@ reglas + dominios autorizados + lista de administradores).
 ## Backend (Firebase)
 
 - **Proyecto:** `golden-shine-sv-75c26`.
-- **Firestore:** colección `solicitudes`; reglas en `app/firestore.rules`
-  (crear público y validado; leer/actualizar solo administradores; sin borrado
-  desde el cliente). Índices en `app/firestore.indexes.json`.
-- **Auth:** login con Google. Administradores en `VITE_ADMIN_EMAILS` (cliente)
-  y en `firestore.rules` (servidor) — mantener ambos en sync. Admin actual:
-  `info@edenstudio.dev`.
+- **Firestore:** `solicitudes` (cada una con dueño `clienteId`) y `clientes`
+  (perfil por `uid`). Reglas en `app/firestore.rules`: el cliente crea y gestiona
+  solo lo suyo (transiciones acotadas), el admin tiene control total, nadie borra
+  desde el cliente. Índices en `app/firestore.indexes.json`.
+- **Auth:** login con Google para todos. El **admin** se distingue por la lista
+  blanca en `VITE_ADMIN_EMAILS` (cliente) y en `firestore.rules` (servidor) —
+  mantener ambos en sync. Admin actual: `info@edenstudio.dev`. Cualquier otra
+  cuenta de Google entra como **cliente**.
+- **Mapa:** Leaflet + OpenStreetMap (tiles gratis) y geocodificación inversa
+  best-effort con Nominatim. No requiere API key.
 
 Desplegar reglas/índices:
 
