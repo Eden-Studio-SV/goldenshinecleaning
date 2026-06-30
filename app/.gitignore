@@ -8,10 +8,14 @@ dist
 dist-ssr
 *.local
 
-# entorno (¡nunca commitear credenciales!)
+# entorno
+# .env / .env.local guardan la config local y NUNCA se commitean.
 .env
 .env.*
 !.env.example
+# .env.production sí se versiona a propósito: solo contiene la config web de
+# Firebase (pública por diseño) para que Vercel construya sin variables manuales.
+!.env.production
 
 # firebase
 .firebase
