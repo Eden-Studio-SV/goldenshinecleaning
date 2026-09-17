@@ -1,33 +1,55 @@
-import { Star } from "lucide-react";
+import { Users, Building2, Briefcase, Home } from "lucide-react";
 import { SectionHead } from "./SectionHead";
-import { TESTIMONIOS } from "../content";
+import { useTranslation } from "@/i18n";
 
 export function Testimonios() {
-  return (
-    <section id="testimonios" className="bg-brand-50 py-20 lg:py-24">
-      <div className="container-app">
-        <SectionHead eyebrow="Testimonios" titulo="Lo que dicen nuestros clientes" />
+  const { t } = useTranslation();
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {TESTIMONIOS.map((t) => (
-            <figure key={t.nombre} className="card flex flex-col p-7">
-              <div className="flex" aria-label="5 de 5 estrellas">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-gold text-gold" />
-                ))}
+  const audiencias = [
+    {
+      icon: Home,
+      tituloKey: "audiencias.familias.title",
+      descKey: "audiencias.familias.desc",
+    },
+    {
+      icon: Building2,
+      tituloKey: "audiencias.negocios.title",
+      descKey: "audiencias.negocios.desc",
+    },
+    {
+      icon: Briefcase,
+      tituloKey: "audiencias.administradores.title",
+      descKey: "audiencias.administradores.desc",
+    },
+    {
+      icon: Users,
+      tituloKey: "audiencias.hosts.title",
+      descKey: "audiencias.hosts.desc",
+    },
+  ];
+
+  return (
+    <section id="audiencias" className="bg-brand-50 py-20 lg:py-24">
+      <div className="container-app">
+        <SectionHead
+          eyebrow={t("audiencias.eyebrow")}
+          titulo={t("audiencias.title")}
+          sub={t("audiencias.sub")}
+        />
+
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {audiencias.map((a) => {
+            const Icon = a.icon;
+            return (
+              <div key={a.tituloKey} className="card p-6">
+                <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-500">
+                  <Icon className="h-6 w-6" />
+                </span>
+                <h3 className="mt-4 text-lg">{t(a.tituloKey)}</h3>
+                <p className="mt-1.5 text-sm text-gray-600">{t(a.descKey)}</p>
               </div>
-              <blockquote className="mt-4 flex-1 text-gray-700">“{t.texto}”</blockquote>
-              <figcaption className="mt-6 flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-full bg-navy-800 font-bold text-white">
-                  {t.inicial}
-                </span>
-                <span>
-                  <span className="block font-semibold text-navy-800">{t.nombre}</span>
-                  <span className="block text-sm text-gray-500">{t.ciudad}</span>
-                </span>
-              </figcaption>
-            </figure>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

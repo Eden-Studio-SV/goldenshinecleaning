@@ -19,6 +19,7 @@ import { hoyISO, reprogramarSchema } from "@/lib/validators";
 import type { Actor, Solicitud } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
+import { useTranslation, useLocale, translateText, accionLabel } from "@/i18n";
 
 type Modo = null | "proponer" | "pedirReprogramar" | "rechazar";
 
@@ -31,6 +32,8 @@ export function AccionesSolicitud({
   rol: Actor;
   onDone?: () => void;
 }) {
+  const { t } = useTranslation();
+  const locale = useLocale();
   const [modo, setModo] = useState<Modo>(null);
   const [fecha, setFecha] = useState(solicitud.fechaDeseada);
   const [hora, setHora] = useState(solicitud.horaDeseada);
@@ -39,7 +42,8 @@ export function AccionesSolicitud({
   const [error, setError] = useState<string | null>(null);
 
   const acciones = accionesDisponibles(solicitud, rol);
-  const aviso = mensajeEstado(solicitud, rol);
+  const avisoRaw = mensajeEstado(solicitud, rol);
+  const aviso = avisoRaw ? translateText(avisoRaw, locale) : null;
   if (acciones.length === 0 && !aviso) return null;
 
   const run = async (fn: () => Promise<unknown>) => {
@@ -51,7 +55,7 @@ export function AccionesSolicitud({
       setMotivo("");
       onDone?.();
     } catch {
-      setError("No se pudo completar la acción. Intenta de nuevo.");
+      setError(t("acciones.error"));
     } finally {
       setSaving(false);
     }
@@ -74,25 +78,25 @@ export function AccionesSolicitud({
       case "completar":
         return run(() => completarSolicitud(solicitud));
       case "cancelar":
-        if (!window.confirm("¿Seguro que quieres cancelar esta solicitud?")) return;
+        if (!window.confirm(t("acciones.confirmCancel"))) return;
         return run(() =>
           cancelarSolicitud(
             solicitud.id,
-            rol === "cliente" ? "Cancelada por el cliente" : "Cancelada por Golden Shine",
+            rol === "cliente" ? t("acciones.cancelCliente") : t("acciones.cancelAdmin"),
           ),
         );
       case "aceptarPropuesta":
-        return run(() => aceptarPropuesta(solicitud));
+        return run(() => aceptarPropuesta(solicitud, rol));
       case "rechazarPropuesta":
-        if (!window.confirm("¿Rechazar la propuesta y mantener la fecha anterior?")) return;
-        return run(() => rechazarPropuesta(solicitud));
+        if (!window.confirm(t("acciones.confirmRejectProp"))) return;
+        return run(() => rechazarPropuesta(solicitud, rol));
     }
   };
 
   const enviarReprograma = () => {
     const parsed = reprogramarSchema.safeParse({ fecha, hora, motivo });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Revisa la fecha y hora.");
+      setError(translateText(parsed.error.issues[0]?.message ?? t("val.reprogramar"), locale));
       return;
     }
     run(() => proponerCambio(solicitud, { fecha, hora, motivo }, rol satisfies Actor));
@@ -102,7 +106,9 @@ export function AccionesSolicitud({
 
   return (
     <div className="card p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">Acciones</h2>
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+        {t("acciones.title")}
+      </h2>
 
       {aviso && (
         <p className="mt-3 flex items-start gap-2 rounded-lg bg-purple-50 px-3 py-2 text-sm text-purple-800">
@@ -121,29 +127,29 @@ export function AccionesSolicitud({
               className="w-full justify-center"
               onClick={() => handle(a)}
             >
-              {ACCION_META[a].label}
+              {accionLabel(a, locale)}
             </Button>
           ))}
         </div>
       ) : modo === "rechazar" ? (
         <div className="mt-3 grid gap-2">
           <label className="label" htmlFor="motivo-rechazo">
-            Motivo (opcional)
+            {t("acciones.motivo")}
           </label>
           <textarea
             id="motivo-rechazo"
             rows={2}
             className="input"
-            placeholder="Ej. No tenemos disponibilidad en esa fecha."
+            placeholder={t("acciones.motivo.ph")}
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
           />
           <div className="flex gap-2">
             <Button variant="peligro" className="flex-1 justify-center" disabled={saving} onClick={enviarRechazo}>
-              Confirmar rechazo
+              {t("acciones.confirmarRechazo")}
             </Button>
             <Button variant="ghost" disabled={saving} onClick={() => setModo(null)}>
-              Volver
+              {t("acciones.volver")}
             </Button>
           </div>
         </div>
@@ -152,7 +158,7 @@ export function AccionesSolicitud({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="label" htmlFor="re-fecha">
-                Nueva fecha
+                {t("acciones.nuevaFecha")}
               </label>
               <input
                 id="re-fecha"
@@ -165,7 +171,7 @@ export function AccionesSolicitud({
             </div>
             <div>
               <label className="label" htmlFor="re-hora">
-                Nueva hora
+                {t("acciones.nuevaHora")}
               </label>
               <input
                 id="re-hora"
@@ -178,23 +184,23 @@ export function AccionesSolicitud({
           </div>
           <div>
             <label className="label" htmlFor="re-motivo">
-              Nota (opcional)
+              {t("acciones.nota")}
             </label>
             <input
               id="re-motivo"
               type="text"
               className="input"
-              placeholder="Motivo del cambio"
+              placeholder={t("acciones.nota.ph")}
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
             <Button variant="primary" className="flex-1 justify-center" disabled={saving} onClick={enviarReprograma}>
-              Enviar propuesta
+              {t("acciones.enviarPropuesta")}
             </Button>
             <Button variant="ghost" disabled={saving} onClick={() => setModo(null)}>
-              Volver
+              {t("acciones.volver")}
             </Button>
           </div>
         </div>
@@ -202,7 +208,7 @@ export function AccionesSolicitud({
 
       {saving && (
         <p className="mt-3 inline-flex items-center gap-2 text-xs text-gray-400">
-          <Spinner className="h-3.5 w-3.5" /> Guardando…
+          <Spinner className="h-3.5 w-3.5" /> {t("common.saving")}
         </p>
       )}
       {error && <p className="mt-3 text-xs text-red-600">{error}</p>}

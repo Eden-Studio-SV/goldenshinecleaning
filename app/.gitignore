@@ -17,6 +17,10 @@ dist-ssr
 # Firebase (pública por diseño) para que Vercel construya sin variables manuales.
 !.env.production
 
+# Credenciales locales del backend de correo.
+.credentials
+.credentials.*
+
 # firebase
 .firebase
 firebase-debug.log
@@ -41,3 +45,11 @@ yarn-error.log*
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# testing
+coverage
+test-results
+playwright-report
+blob-report
+playwright/.cache
+e2e/.auth

@@ -9,200 +9,230 @@ import {
   ClipboardList,
   CalendarCheck,
   Wand2,
+  Truck,
+  BedDouble,
+  HardHat,
+  Repeat,
   type LucideIcon,
 } from "lucide-react";
-import type { TipoServicio } from "@/types";
+import type { Frecuencia, TipoServicio } from "@/types";
 
 /**
- * Contenido editable de la landing (§8.3). Cambiar textos aquí no requiere
- * tocar componentes.
+ * Contenido editable de la landing. Cambiar textos aquí no requiere tocar
+ * componentes. Los textos visibles se sirven vía i18n (`@/i18n`); este archivo
+ * expone la estructura (iconos, ids, orden) y datos de contacto configurables.
  *
- * ⚠️ DATOS DE CONTACTO = PLACEHOLDERS. Reemplazar con la información real del
- * negocio antes de publicar (teléfono, WhatsApp, correo, horario y ciudad).
+ * ⚠️ DATOS DE CONTACTO: se leen de variables de entorno (VITE_CONTACT_PHONE,
+ * VITE_CONTACT_EMAIL) si están definidas. Si no, NO se muestran enlaces
+ * públicos de teléfono/WhatsApp/email inventados; el CTA principal es el
+ * formulario. Reportar si faltan contactos reales.
  */
-export const CONTACTO = {
-  telefono: "+1 (555) 123-4567", // TODO: teléfono real
-  telefonoHref: "tel:+15551234567",
-  whatsapp: "15551234567", // TODO: número WhatsApp real (formato internacional sin +)
-  whatsappHref: "https://wa.me/15551234567",
-  email: "contacto@goldenshine.com", // TODO: correo real
-  horario: "Lun – Sáb · 8:00 am – 6:00 pm",
-  ciudad: "Tu ciudad y alrededores", // TODO: zona real
+
+interface ContactoConfig {
+  /** Teléfono público (E.164 o legible). `null` si no está confirmado. */
+  telefono: string | null;
+  telefonoHref: string | null;
+  /** Número WhatsApp (formato internacional sin +). `null` si no está confirmado. */
+  whatsapp: string | null;
+  whatsappHref: string | null;
+  /** Correo público. `null` si no está confirmado. */
+  email: string | null;
+  horario: string;
+  ciudad: string;
   redes: {
-    facebook: "#",
-    instagram: "#",
+    facebook: string | null;
+    instagram: string | null;
+  };
+}
+
+/**
+ * Acceso genérico a variables de entorno de contacto sin extender
+ * `ImportMetaEnv` (gestionado por otro agente). Solo lectura de strings.
+ */
+const ENV = import.meta.env as unknown as Record<string, string | undefined>;
+
+function envStr(v: string | undefined): string | null {
+  if (!v) return null;
+  const t = v.trim();
+  return t.length > 0 ? t : null;
+}
+
+const ENV_PHONE = envStr(ENV.VITE_CONTACT_PHONE);
+const ENV_EMAIL = envStr(ENV.VITE_CONTACT_EMAIL);
+const ENV_WHATSAPP = envStr(ENV.VITE_CONTACT_WHATSAPP);
+
+export const CONTACTO: ContactoConfig = {
+  telefono: ENV_PHONE,
+  telefonoHref: ENV_PHONE ? `tel:${ENV_PHONE.replace(/[^\d+]/g, "")}` : null,
+  whatsapp: ENV_WHATSAPP,
+  whatsappHref: ENV_WHATSAPP ? `https://wa.me/${ENV_WHATSAPP}` : null,
+  email: ENV_EMAIL,
+  horario: "Mon–Sat · 8:00 AM – 7:00 PM",
+  ciudad: "Boston, Massachusetts",
+  redes: {
+    facebook: envStr(ENV.VITE_CONTACT_FACEBOOK),
+    instagram: envStr(ENV.VITE_CONTACT_INSTAGRAM),
   },
 };
 
 /**
  * Centro y zoom por defecto del mapa (Leaflet) en el formulario.
- * ⚠️ PLACEHOLDER: San Salvador. Ajustar a la zona real de operación.
+ * Boston, Massachusetts (downtown).
  */
 export const MAPA_DEFAULT = {
-  centro: { lat: 13.6929, lng: -89.2182 },
+  centro: { lat: 42.3601, lng: -71.0589 },
   zoom: 13,
 };
 
-export const NAV_LINKS: { id: string; label: string }[] = [
-  { id: "servicios", label: "Servicios" },
-  { id: "como-funciona", label: "Cómo funciona" },
-  { id: "por-que", label: "Por qué elegirnos" },
-  { id: "cobertura", label: "Cobertura" },
+export const NAV_LINKS: { id: string; labelKey: string }[] = [
+  { id: "servicios", labelKey: "nav.services" },
+  { id: "como-funciona", labelKey: "nav.howItWorks" },
+  { id: "por-que", labelKey: "nav.whyUs" },
+  { id: "cobertura", labelKey: "nav.coverage" },
 ];
 
 export const HERO = {
-  titulo: "Un hogar impecable, sin que muevas un dedo",
-  subtitulo:
-    "Golden Shine es tu servicio de limpieza de confianza para casa y oficina. Personal capacitado, productos seguros y resultados que brillan. Solicita en línea en menos de un minuto.",
-  ctaPrimario: "Solicitar limpieza",
-  ctaSecundario: "Ver servicios",
-  stats: [
-    { valor: "+2,400", etiqueta: "limpiezas realizadas" },
-    { valor: "4.9/5", etiqueta: "satisfacción de clientes" },
-    { valor: "100%", etiqueta: "garantía de servicio" },
-  ],
+  tituloKey: "hero.title",
+  subtituloKey: "hero.subtitle",
+  ctaPrimarioKey: "hero.ctaPrimary",
+  ctaSecundarioKey: "hero.ctaSecondary",
+  areaKey: "hero.areaBoston",
+  scheduleKey: "hero.schedule",
 };
 
 export interface Servicio {
   id: TipoServicio;
+  /** Frecuencia preseleccionada al solicitar este servicio, si aplica. */
+  frecuencia?: Frecuencia;
   icon: LucideIcon;
-  titulo: string;
-  descripcion: string;
-  incluye: string[];
+  /** Clave i18n del título. */
+  tituloKey: string;
+  /** Clave i18n de la descripción. */
+  descKey: string;
+  /** Claves i18n de los bullets (incluye). */
+  incluyeKeys: string[];
+  /** Destacado en la cuadrícula de servicios. */
+  destacado?: boolean;
 }
 
+/**
+ * Catálogo de servicios de marketing. Cubre los seis del brief
+ * (residencial, post-construcción, profunda, recurrente, mudanza, Airbnb) y
+ * conserva comercial como secundario. Residencial y Airbnb se destacan.
+ */
 export const SERVICIOS: Servicio[] = [
   {
     id: "residencial",
     icon: Home,
-    titulo: "Limpieza Residencial",
-    descripcion:
-      "Mantenimiento regular de tu casa o apartamento para que siempre luzca y se sienta fresco.",
-    incluye: [
-      "Cocina, baños y áreas comunes",
-      "Pisos, polvo y superficies",
-      "Frecuencia semanal, quincenal o mensual",
+    tituloKey: "servicios.residencial.title",
+    descKey: "servicios.residencial.desc",
+    incluyeKeys: [
+      "servicios.residencial.0",
+      "servicios.residencial.1",
+      "servicios.residencial.2",
     ],
+    destacado: true,
   },
   {
-    id: "comercial",
-    icon: Building2,
-    titulo: "Limpieza Comercial",
-    descripcion:
-      "Oficinas, locales y consultorios siempre presentables para tu equipo y tus clientes.",
-    incluye: [
-      "Escritorios y áreas de trabajo",
-      "Recepción, baños y salas",
-      "Horarios flexibles, fuera de operación",
+    id: "airbnb",
+    icon: BedDouble,
+    tituloKey: "servicios.airbnb.title",
+    descKey: "servicios.airbnb.desc",
+    incluyeKeys: ["servicios.airbnb.0", "servicios.airbnb.1", "servicios.airbnb.2"],
+    destacado: true,
+  },
+  {
+    id: "post_construccion",
+    icon: HardHat,
+    tituloKey: "servicios.post_construccion.title",
+    descKey: "servicios.post_construccion.desc",
+    incluyeKeys: [
+      "servicios.post_construccion.0",
+      "servicios.post_construccion.1",
+      "servicios.post_construccion.2",
     ],
   },
   {
     id: "profunda",
     icon: Sparkles,
-    titulo: "Limpieza Profunda",
-    descripcion:
-      "Una limpieza a fondo, de arriba a abajo. Ideal para mudanzas, post-obra o puesta a punto.",
-    incluye: [
-      "Detalle en rincones y zócalos",
-      "Interior de electrodomésticos",
-      "Desinfección de puntos de contacto",
-    ],
+    tituloKey: "servicios.profunda.title",
+    descKey: "servicios.profunda.desc",
+    incluyeKeys: ["servicios.profunda.0", "servicios.profunda.1", "servicios.profunda.2"],
+  },
+  {
+    id: "mudanza",
+    icon: Truck,
+    tituloKey: "servicios.mudanza.title",
+    descKey: "servicios.mudanza.desc",
+    incluyeKeys: ["servicios.mudanza.0", "servicios.mudanza.1", "servicios.mudanza.2"],
+  },
+  {
+    id: "comercial",
+    icon: Building2,
+    tituloKey: "servicios.comercial.title",
+    descKey: "servicios.comercial.desc",
+    incluyeKeys: ["servicios.comercial.0", "servicios.comercial.1", "servicios.comercial.2"],
   },
 ];
 
+/**
+ * Oferta recurrente de marketing. No pertenece a `SERVICIOS` porque el
+ * formulario usa ese catálogo únicamente para los tipos de servicio válidos.
+ */
+export const SERVICIO_RECURRENTE: Servicio = {
+  id: "residencial",
+  frecuencia: "semanal",
+  icon: Repeat,
+  tituloKey: "servicios.recurrente.title",
+  descKey: "servicios.recurrente.desc",
+  incluyeKeys: ["servicios.recurrente.0", "servicios.recurrente.1", "servicios.recurrente.2"],
+};
+
 export interface Punto {
   icon: LucideIcon;
-  titulo: string;
-  descripcion: string;
+  tituloKey: string;
+  descKey: string;
 }
 
 export const POR_QUE: Punto[] = [
-  {
-    icon: Clock,
-    titulo: "Puntualidad",
-    descripcion: "Llegamos a la hora acordada y respetamos tu tiempo.",
-  },
-  {
-    icon: BadgeCheck,
-    titulo: "Personal capacitado",
-    descripcion: "Equipo verificado y entrenado en cada tipo de servicio.",
-  },
-  {
-    icon: Leaf,
-    titulo: "Productos seguros",
-    descripcion: "Insumos eficaces y amables con tu familia y mascotas.",
-  },
-  {
-    icon: ShieldCheck,
-    titulo: "Garantía de satisfacción",
-    descripcion: "Si algo no quedó perfecto, lo corregimos sin costo.",
-  },
+  { icon: Clock, tituloKey: "porQue.puntualidad.title", descKey: "porQue.puntualidad.desc" },
+  { icon: BadgeCheck, tituloKey: "porQue.personal.title", descKey: "porQue.personal.desc" },
+  { icon: Leaf, tituloKey: "porQue.productos.title", descKey: "porQue.productos.desc" },
+  { icon: ShieldCheck, tituloKey: "porQue.proceso.title", descKey: "porQue.proceso.desc" },
 ];
 
 export interface Paso {
   numero: number;
   icon: LucideIcon;
-  titulo: string;
-  descripcion: string;
+  tituloKey: string;
+  descKey: string;
 }
 
 export const PASOS: Paso[] = [
   {
     numero: 1,
     icon: ClipboardList,
-    titulo: "Solicitas en línea",
-    descripcion: "Completas el formulario con el tipo de limpieza, fecha y hora deseada.",
+    tituloKey: "comoFunciona.1.title",
+    descKey: "comoFunciona.1.desc",
   },
   {
     numero: 2,
     icon: CalendarCheck,
-    titulo: "Confirmamos fecha y hora",
-    descripcion: "Te contactamos para confirmar los detalles y resolver dudas.",
+    tituloKey: "comoFunciona.2.title",
+    descKey: "comoFunciona.2.desc",
   },
   {
     numero: 3,
     icon: Wand2,
-    titulo: "Limpiamos",
-    descripcion: "Nuestro equipo llega y deja tu espacio impecable.",
+    tituloKey: "comoFunciona.3.title",
+    descKey: "comoFunciona.3.desc",
   },
 ];
 
-export interface Testimonio {
-  nombre: string;
-  inicial: string;
-  ciudad: string;
-  texto: string;
-}
-
-export const TESTIMONIOS: Testimonio[] = [
-  {
-    nombre: "María L.",
-    inicial: "M",
-    ciudad: "Cliente residencial",
-    texto:
-      "Dejaron mi cocina impecable y fueron muy amables. Solicitar tomó menos de un minuto.",
-  },
-  {
-    nombre: "Jorge P.",
-    inicial: "J",
-    ciudad: "Oficina comercial",
-    texto:
-      "Usamos Golden Shine cada semana para la oficina. Siempre puntuales y muy minuciosos.",
-  },
-  {
-    nombre: "Aisha K.",
-    inicial: "A",
-    ciudad: "Limpieza profunda",
-    texto:
-      "La limpieza profunda antes de mudarnos fue excelente. Valió cada centavo.",
-  },
-];
-
-export const ZONAS: string[] = [
-  "Centro",
-  "Zona Norte",
-  "Zona Sur",
-  "Zona Este",
-  "Zona Oeste",
-  "Áreas aledañas",
+/**
+ * Zonas de cobertura (Boston, MA). Claves i18n para los labels.
+ * No se inventan zonas no confirmadas.
+ */
+export const ZONAS: { id: string; labelKey: string }[] = [
+  { id: "boston", labelKey: "cobertura.boston" },
 ];

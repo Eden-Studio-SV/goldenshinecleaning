@@ -1,11 +1,21 @@
 import type { Timestamp } from "firebase/firestore";
 
-/** Formatea una fecha ISO (YYYY-MM-DD) en español. */
-export function formatFecha(iso: string, opts?: Intl.DateTimeFormatOptions): string {
+/**
+ * Formatea una fecha ISO (YYYY-MM-DD) en español (o el locale indicado).
+ * El locale es opcional y por defecto `"es"` para no romper los usos
+ * existentes que no lo pasan.
+ */
+export function formatFecha(
+  iso: string,
+  opts?: Intl.DateTimeFormatOptions,
+  locale: string = "es",
+): string {
   if (!iso) return "—";
   try {
-    return new Date(`${iso}T00:00:00`).toLocaleDateString(
-      "es",
+    const d = new Date(`${iso}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString(
+      locale,
       opts ?? { day: "2-digit", month: "short", year: "numeric" },
     );
   } catch {
@@ -13,11 +23,17 @@ export function formatFecha(iso: string, opts?: Intl.DateTimeFormatOptions): str
   }
 }
 
-/** Formatea un Timestamp de Firestore (fecha + hora) en español. */
-export function formatTimestamp(ts: Timestamp | null | undefined): string {
+/**
+ * Formatea un Timestamp de Firestore (fecha + hora) en español (o el locale
+ * indicado). El locale es opcional para preservar los usos existentes.
+ */
+export function formatTimestamp(
+  ts: Timestamp | null | undefined,
+  locale: string = "es",
+): string {
   if (!ts) return "—";
   try {
-    return ts.toDate().toLocaleString("es", {
+    return ts.toDate().toLocaleString(locale, {
       day: "2-digit",
       month: "short",
       year: "numeric",

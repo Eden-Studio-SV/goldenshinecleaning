@@ -4,16 +4,14 @@ import { AlertTriangle, CalendarPlus, ChevronRight, Sparkles } from "lucide-reac
 import { observarSolicitudesCliente } from "@/lib/solicitudes";
 import { useAuth } from "@/lib/auth";
 import { formatFecha } from "@/lib/format";
-import { ESTADOS_ACTIVOS, FRECUENCIA_LABEL, TIPOS_SERVICIO, type Solicitud } from "@/types";
+import { ESTADOS_ACTIVOS, type Solicitud } from "@/types";
 import { EstadoBadge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
-
-function tipoLabel(value: string): string {
-  return TIPOS_SERVICIO.find((t) => t.value === value)?.label ?? value;
-}
+import { useTranslation, useLocale, tipoServicioLabel, frecuenciaLabel } from "@/i18n";
 
 function Tarjeta({ s }: { s: Solicitud }) {
+  const locale = useLocale();
   return (
     <Link
       to={`/portal/solicitud/${s.id}`}
@@ -21,12 +19,14 @@ function Tarjeta({ s }: { s: Solicitud }) {
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="truncate font-semibold text-navy-800">{tipoLabel(s.tipoServicio)}</span>
+          <span className="truncate font-semibold text-navy-800">
+            {tipoServicioLabel(s.tipoServicio, locale)}
+          </span>
           <EstadoBadge estado={s.estado} />
         </div>
         <p className="mt-1 truncate text-sm text-gray-500">
-          {formatFecha(s.fechaDeseada)} · {s.horaDeseada}
-          {s.frecuencia !== "unica" && <> · {FRECUENCIA_LABEL[s.frecuencia]}</>}
+          {formatFecha(s.fechaDeseada, undefined, locale)} · {s.horaDeseada}
+          {s.frecuencia !== "unica" && <> · {frecuenciaLabel(s.frecuencia, locale)}</>}
         </p>
       </div>
       <ChevronRight className="h-5 w-5 shrink-0 text-gray-400" />
@@ -55,6 +55,7 @@ function Seccion({ titulo, items, vacio }: { titulo: string; items: Solicitud[];
 
 export default function MisLimpiezas() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [items, setItems] = useState<Solicitud[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,9 +66,10 @@ export default function MisLimpiezas() {
     const unsub = observarSolicitudesCliente(
       user.uid,
       setItems,
-      () => setError("No se pudieron cargar tus solicitudes. Revisa tu conexión."),
+      () => setError(t("portal.error")),
     );
     return unsub;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const proximas = (items ?? []).filter((s) => ESTADOS_ACTIVOS.includes(s.estado));
@@ -77,14 +79,12 @@ export default function MisLimpiezas() {
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-navy-800">Mis limpiezas</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Solicita, da seguimiento y reprograma tus servicios.
-          </p>
+          <h1 className="text-2xl font-bold text-navy-800">{t("portal.title")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{t("portal.subtitle")}</p>
         </div>
         <Link to="/solicitar">
           <Button variant="gold">
-            <CalendarPlus className="h-4 w-4" /> Solicitar limpieza
+            <CalendarPlus className="h-4 w-4" /> {t("portal.requestCleaning")}
           </Button>
         </Link>
       </div>
@@ -102,17 +102,17 @@ export default function MisLimpiezas() {
       ) : items.length === 0 ? (
         <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center">
           <Sparkles className="h-10 w-10 text-gray-300" />
-          <p className="mt-3 font-medium text-gray-600">Aún no has solicitado ninguna limpieza.</p>
+          <p className="mt-3 font-medium text-gray-600">{t("portal.vacio.titulo")}</p>
           <Link to="/solicitar" className="mt-4">
             <Button variant="gold">
-              <CalendarPlus className="h-4 w-4" /> Solicitar mi primera limpieza
+              <CalendarPlus className="h-4 w-4" /> {t("portal.vacio.cta")}
             </Button>
           </Link>
         </div>
       ) : (
         <>
-          <Seccion titulo="Próximas" items={proximas} vacio="No tienes limpiezas activas." />
-          <Seccion titulo="Historial" items={historial} vacio="Aún no hay historial." />
+          <Seccion titulo={t("portal.proximas")} items={proximas} vacio={t("portal.vacio.proximas")} />
+          <Seccion titulo={t("portal.historial")} items={historial} vacio={t("portal.vacio.historial")} />
         </>
       )}
     </div>

@@ -100,3 +100,33 @@ export function mensajeEstado(s: Pick<Solicitud, "estado" | "propuesta">, rol: A
 export function estadoAlRechazarPropuesta(s: Pick<Solicitud, "estadoPrevio">): EstadoSolicitud {
   return s.estadoPrevio ?? "agendada";
 }
+
+/**
+ * true si `rol` es la parte contraria al autor de la propuesta vigente, es
+ * decir, quien debe aceptarla o rechazarla. El autor de una propuesta no puede
+ * aceptarla/rechazarla: solo la otra parte. Usado por la capa de datos y por
+ * la UI para mostrar/ocultar acciones.
+ */
+export function esPropuestaContraria(s: Pick<Solicitud, "propuesta">, rol: Actor): boolean {
+  return !!s.propuesta && s.propuesta.por !== rol;
+}
+
+/**
+ * Resumen de todas las combinaciones rol/estado -> acciones disponibles.
+ * Útil para pruebas exhaustivas y para auditar la máquina de estados.
+ */
+export function tablaAcciones(
+  estados: EstadoSolicitud[],
+  roles: Actor[] = ["admin", "cliente"],
+): Record<Actor, Partial<Record<EstadoSolicitud, AccionId[]>>> {
+  const out = {} as Record<Actor, Partial<Record<EstadoSolicitud, AccionId[]>>>;
+  for (const rol of roles) {
+    out[rol] = {};
+    for (const e of estados) {
+      // Caso representativo sin propuesta (para reprogramacion la disponibilidad
+      // depende de quién propuso; aquí se usa el caso "propuesta del otro").
+      out[rol][e] = accionesDisponibles({ estado: e, propuesta: null }, rol);
+    }
+  }
+  return out;
+}

@@ -15,5 +15,27 @@
         ]
       }
     ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "mail",
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    }
+  ],
+  "emulators": {
+    "auth": {
+      "port": 9100
+    },
+    "firestore": {
+      "port": 8081
+    },
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
   }
 }

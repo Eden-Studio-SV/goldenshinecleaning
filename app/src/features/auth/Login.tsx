@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, type Location } from "react-router-dom";
 import { Info } from "lucide-react";
 import { useAuth, isAdminEmail } from "@/lib/auth";
 import { isFirebaseConfigured } from "@/firebase";
 import { Spinner } from "@/components/ui/Spinner";
 import { Brand } from "@/components/layout/Brand";
+import { useTranslation } from "@/i18n";
 
 function GoogleIcon() {
   return (
@@ -33,10 +34,16 @@ export default function Login() {
   const { loginWithGoogle, user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+  const fromLoc = (location.state as { from?: Partial<Location> } | null)?.from;
+  // Conserva path + search + hash para volver a la URL exacta tras login
+  // (ej. /solicitar?servicio=airbnb#mapa).
+  const from = fromLoc
+    ? `${fromLoc.pathname ?? "/"}${fromLoc.search ?? ""}${fromLoc.hash ?? ""}`
+    : "";
   const destino = from || (isAdmin ? "/admin" : "/portal");
 
   // Ya hay sesión: a su destino.
@@ -56,11 +63,11 @@ export default function Login() {
       ) {
         setError(null);
       } else if (err?.code === "auth/popup-blocked") {
-        setError("El navegador bloqueó la ventana emergente. Permite pop-ups e intenta de nuevo.");
+        setError(t("login.error.popupBlocked"));
       } else if (err?.code === "auth/network-request-failed") {
-        setError("Error de red. Verifica tu conexión.");
+        setError(t("login.error.network"));
       } else {
-        setError("No se pudo iniciar sesión. Intenta de nuevo.");
+        setError(t("login.error.generic"));
       }
     } finally {
       setBusy(false);
@@ -75,15 +82,13 @@ export default function Login() {
         </div>
 
         <div className="card mt-6 p-7">
-          <h1 className="text-center text-xl font-bold text-navy-800">Ingresa a tu cuenta</h1>
-          <p className="mt-1 text-center text-sm text-gray-500">
-            Inicia sesión con Google para solicitar limpiezas y darles seguimiento.
-          </p>
+          <h1 className="text-center text-xl font-bold text-navy-800">{t("login.title")}</h1>
+          <p className="mt-1 text-center text-sm text-gray-500">{t("login.subtitle")}</p>
 
           {!isFirebaseConfigured && (
             <div className="mt-5 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
               <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>Firebase no está conectado todavía.</span>
+              <span>{t("login.firebaseNotConfigured")}</span>
             </div>
           )}
 
@@ -95,11 +100,11 @@ export default function Login() {
           >
             {busy ? (
               <>
-                <Spinner className="h-5 w-5 text-brand-500" /> Conectando…
+                <Spinner className="h-5 w-5 text-brand-500" /> {t("login.connecting")}
               </>
             ) : (
               <>
-                <GoogleIcon /> Continuar con Google
+                <GoogleIcon /> {t("login.continueGoogle")}
               </>
             )}
           </button>
@@ -109,11 +114,13 @@ export default function Login() {
               {error}
             </p>
           )}
+
+          <p className="mt-5 text-center text-xs text-gray-400">{t("login.noteQuote")}</p>
         </div>
 
         <div className="mt-5 text-center">
           <Link to="/" className="text-sm text-white/60 hover:text-white">
-            ← Volver al sitio
+            {t("login.backToSite")}
           </Link>
         </div>
       </div>

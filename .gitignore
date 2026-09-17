@@ -1,2 +1,6 @@
 .DS_Store
 .claude/
+
+# Credenciales locales de SMTP (nunca se versionan).
+.credentials
+.credentials.*

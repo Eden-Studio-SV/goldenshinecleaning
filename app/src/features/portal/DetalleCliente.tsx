@@ -4,20 +4,21 @@ import { AlertTriangle, ArrowLeft, MessageCircle } from "lucide-react";
 import { obtenerSolicitud } from "@/lib/solicitudes";
 import { useAuth } from "@/lib/auth";
 import type { Solicitud } from "@/types";
-import { ESTADO_LABEL } from "@/types";
 import { EstadoBadge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { ResumenSolicitud } from "@/features/agendamiento/ResumenSolicitud";
 import { AccionesSolicitud } from "@/features/agendamiento/AccionesSolicitud";
 import { CONTACTO } from "@/features/landing/content";
+import { useTranslation, useLocale, estadoLabel } from "@/i18n";
 
 function BackLink() {
+  const { t } = useTranslation();
   return (
     <Link
       to="/portal"
       className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-brand-500"
     >
-      <ArrowLeft className="h-4 w-4" /> Volver a mis limpiezas
+      <ArrowLeft className="h-4 w-4" /> {t("portal.detalle.back")}
     </Link>
   );
 }
@@ -25,6 +26,8 @@ function BackLink() {
 export default function DetalleCliente() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const locale = useLocale();
   const [solicitud, setSolicitud] = useState<Solicitud | null | undefined>(undefined);
 
   const cargar = useCallback(async () => {
@@ -56,7 +59,7 @@ export default function DetalleCliente() {
         <BackLink />
         <div className="mt-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-          <p>No encontramos esta solicitud o no pertenece a tu cuenta.</p>
+          <p>{t("portal.detalle.notFound")}</p>
         </div>
       </div>
     );
@@ -66,10 +69,12 @@ export default function DetalleCliente() {
     <div>
       <BackLink />
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-navy-800">Tu solicitud</h1>
+        <h1 className="text-2xl font-bold text-navy-800">{t("portal.detalle.title")}</h1>
         <EstadoBadge estado={solicitud.estado} />
       </div>
-      <p className="mt-1 text-sm text-gray-500">Estado: {ESTADO_LABEL[solicitud.estado]}</p>
+      <p className="mt-1 text-sm text-gray-500">
+        {t("portal.detalle.estado", { estado: estadoLabel(solicitud.estado, locale) })}
+      </p>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -79,19 +84,21 @@ export default function DetalleCliente() {
         <div className="space-y-6">
           <AccionesSolicitud solicitud={solicitud} rol="cliente" onDone={cargar} />
 
-          <div className="card p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
-              ¿Necesitas ayuda?
-            </h2>
-            <a
-              href={CONTACTO.whatsappHref}
-              target="_blank"
-              rel="noreferrer"
-              className="btn btn-primary btn-md mt-3 w-full justify-center"
-            >
-              <MessageCircle className="h-4 w-4" /> Escribirnos por WhatsApp
-            </a>
-          </div>
+          {CONTACTO.whatsappHref && (
+            <div className="card p-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
+                {t("portal.detalle.ayuda")}
+              </h2>
+              <a
+                href={CONTACTO.whatsappHref}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-primary btn-md mt-3 w-full justify-center"
+              >
+                <MessageCircle className="h-4 w-4" /> {t("portal.detalle.whatsapp")}
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </div>

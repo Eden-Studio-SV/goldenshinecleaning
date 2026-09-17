@@ -1,24 +1,25 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <title>Golden Shine — Servicio de Limpieza Profesional</title>
+    <title>Golden Shine — Professional Cleaning Service</title>
     <meta
       name="description"
-      content="Golden Shine Cleaning Service: limpieza residencial, comercial y profunda. Solicita tu limpieza en línea en menos de un minuto."
+      content="Golden Shine Cleaning Service: residential, post-construction, deep, recurring, move-in/out and Airbnb cleaning in Boston, MA. Request your cleaning online in under a minute."
     />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Golden Shine — Servicio de Limpieza Profesional" />
+    <meta property="og:title" content="Golden Shine — Professional Cleaning Service" />
     <meta
       property="og:description"
-      content="Limpieza residencial, comercial y profunda. Solicita tu limpieza en línea en menos de un minuto."
+      content="Residential, post-construction, deep, recurring, move-in/out and Airbnb cleaning in Boston, MA. Request your cleaning online in under a minute."
     />
-    <meta property="og:locale" content="es_ES" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
 
     <!-- Fuente: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,6 +28,22 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
+
+    <!--
+      Sincroniza el idioma persistido antes del primer render para evitar un
+      "flash" de idioma incorrecto. El valor lo gestiona src/i18n (localStorage
+      `gs_locale`). Sin reemplazo DOM automático de textos.
+    -->
+    <script>
+      (function () {
+        try {
+          var l = localStorage.getItem("gs_locale");
+          if (l === "es" || l === "en") {
+            document.documentElement.lang = l;
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

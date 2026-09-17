@@ -3,25 +3,29 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Phone, MessageCircle, AlertTriangle } from "lucide-react";
 import { obtenerSolicitud } from "@/lib/solicitudes";
 import { isFirebaseConfigured } from "@/firebase";
-import { ESTADO_LABEL, type Solicitud } from "@/types";
+import type { Solicitud } from "@/types";
 import { EstadoBadge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { ResumenSolicitud } from "@/features/agendamiento/ResumenSolicitud";
 import { AccionesSolicitud } from "@/features/agendamiento/AccionesSolicitud";
+import { useTranslation, useLocale, estadoLabel } from "@/i18n";
 
 function BackLink() {
+  const { t } = useTranslation();
   return (
     <Link
       to="/admin"
       className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-brand-500"
     >
-      <ArrowLeft className="h-4 w-4" /> Volver al listado
+      <ArrowLeft className="h-4 w-4" /> {t("admin.detalle.back")}
     </Link>
   );
 }
 
 export default function DetalleSolicitud() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
+  const locale = useLocale();
   const [solicitud, setSolicitud] = useState<Solicitud | null | undefined>(undefined);
 
   const cargar = useCallback(async () => {
@@ -56,8 +60,8 @@ export default function DetalleSolicitud() {
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
           <p>
             {isFirebaseConfigured
-              ? "No encontramos esta solicitud."
-              : "Firebase no está conectado."}
+              ? t("admin.detalle.notFound")
+              : t("login.firebaseNotConfigured")}
           </p>
         </div>
       </div>
@@ -75,7 +79,9 @@ export default function DetalleSolicitud() {
         <h1 className="text-2xl font-bold text-navy-800">{solicitud.nombre}</h1>
         <EstadoBadge estado={solicitud.estado} />
       </div>
-      <p className="mt-1 text-sm text-gray-500">Estado: {ESTADO_LABEL[solicitud.estado]}</p>
+      <p className="mt-1 text-sm text-gray-500">
+        {t("admin.detalle.estado", { estado: estadoLabel(solicitud.estado, locale) })}
+      </p>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -87,20 +93,22 @@ export default function DetalleSolicitud() {
 
           <div className="card p-6">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-400">
-              Contactar al cliente
+              {t("admin.detalle.contactar")}
             </h2>
             <div className="mt-3 grid gap-2">
               <a href={`tel:${tel}`} className="btn btn-outline btn-md w-full justify-center">
-                <Phone className="h-4 w-4" /> Llamar · {solicitud.telefono}
+                <Phone className="h-4 w-4" /> {t("admin.detalle.llamar", { telefono: solicitud.telefono })}
               </a>
-              <a
-                href={`https://wa.me/${wa}`}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-primary btn-md w-full justify-center"
-              >
-                <MessageCircle className="h-4 w-4" /> WhatsApp
-              </a>
+              {wa && (
+                <a
+                  href={`https://wa.me/${wa}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-primary btn-md w-full justify-center"
+                >
+                  <MessageCircle className="h-4 w-4" /> {t("admin.detalle.whatsapp")}
+                </a>
+              )}
             </div>
           </div>
         </div>

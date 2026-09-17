@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src", "test", "e2e", "vitest.config.ts", "vitest.rules.config.ts", "playwright.config.ts"],
+  "exclude": ["node_modules", "dist", "coverage", "playwright-report", "test-results"]
+}

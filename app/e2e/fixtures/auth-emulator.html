@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="UTF-8" /><title>Auth emulator fixture</title></head>
+  <body>
+    <p id="status" role="status">Conectando al emulador…</p>
+    <script type="module">
+      import { signInWithEmailAndPassword } from "firebase/auth";
+      import { auth, useEmulators } from "/src/firebase.ts";
+
+      const status = document.querySelector("#status");
+      const email = new URLSearchParams(location.search).get("email");
+      if (location.hostname !== "127.0.0.1" || !useEmulators || !auth || !email) {
+        status.textContent = "Fixture de autenticación no disponible.";
+      } else {
+        try {
+          await signInWithEmailAndPassword(auth, email, "e2e-password");
+          status.textContent = "Sesión del emulador iniciada.";
+          status.dataset.result = "ok";
+        } catch (error) {
+          status.textContent = `Error de autenticación: ${error.code || "desconocido"}`;
+          status.dataset.result = "error";
+        }
+      }
+    </script>
+  </body>
+</html>

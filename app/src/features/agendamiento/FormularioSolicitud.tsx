@@ -10,15 +10,17 @@ import { useAuth } from "@/lib/auth";
 import {
   FRECUENCIAS,
   TIPOS_SERVICIO,
+  type Frecuencia,
   type SolicitudInput,
   type TipoServicio,
   type Ubicacion,
 } from "@/types";
-import { SERVICIOS, CONTACTO } from "@/features/landing/content";
+import { SERVICIOS } from "@/features/landing/content";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Spinner } from "@/components/ui/Spinner";
 import { MapaUbicacion } from "@/components/ui/MapaUbicacion";
+import { useTranslation, translateText, tipoServicioLabel, frecuenciaLabelFull } from "@/i18n";
 
 const ICON_BY_TIPO = Object.fromEntries(SERVICIOS.map((s) => [s.id, s.icon])) as Record<
   TipoServicio,
@@ -29,12 +31,17 @@ export default function FormularioSolicitud() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { user } = useAuth();
+  const { t, locale } = useTranslation();
   const [serverError, setServerError] = useState<string | null>(null);
   const [ubicacion, setUbicacion] = useState<Ubicacion | null>(null);
 
   const preset = useMemo<TipoServicio | undefined>(() => {
     const p = params.get("servicio");
-    return TIPOS_SERVICIO.find((t) => t.value === p)?.value;
+    return TIPOS_SERVICIO.find((tt) => tt.value === p)?.value;
+  }, [params]);
+  const presetFrecuencia = useMemo<Frecuencia>(() => {
+    const frecuencia = params.get("frecuencia");
+    return FRECUENCIAS.find((item) => item.value === frecuencia)?.value ?? "unica";
   }, [params]);
 
   const {
@@ -51,7 +58,7 @@ export default function FormularioSolicitud() {
       telefono: "",
       email: "",
       tipoServicio: preset,
-      frecuencia: "unica",
+      frecuencia: presetFrecuencia,
       direccion: "",
       ubicacion: null,
       fechaDeseada: "",
@@ -87,7 +94,7 @@ export default function FormularioSolicitud() {
   const onSubmit = async (values: SolicitudFormValues) => {
     setServerError(null);
     if (!user) {
-      setServerError("Tu sesión expiró. Vuelve a iniciar sesión.");
+      setServerError(t("form.error.session"));
       return;
     }
     const input: SolicitudInput = {
@@ -100,13 +107,16 @@ export default function FormularioSolicitud() {
       ubicacion: ubicacion,
       fechaDeseada: values.fechaDeseada,
       horaDeseada: values.horaDeseada,
+      locale,
       notas: values.notas || undefined,
     };
 
     try {
-      await crearSolicitud(input, { uid: user.uid, email: user.email ?? "" });
+      const id = await crearSolicitud(input, { uid: user.uid, email: user.email ?? "" });
       guardarTelefonoCliente(user.uid, values.telefono).catch(() => undefined);
-      navigate("/solicitud-enviada", {
+      // Navegación durable: incluye el id en la URL para que la confirmación
+      // pueda cargarla vía obtenerSolicitud (no depende solo de location.state).
+      navigate(`/solicitud-enviada?id=${id}`, {
         state: {
           resumen: {
             nombre: values.nombre,
@@ -118,9 +128,7 @@ export default function FormularioSolicitud() {
         },
       });
     } catch {
-      setServerError(
-        `No pudimos enviar tu solicitud. Intenta de nuevo o llámanos al ${CONTACTO.telefono}.`,
-      );
+      setServerError(t("form.error.generic"));
     }
   };
 
@@ -131,31 +139,30 @@ export default function FormularioSolicitud() {
           to="/"
           className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-brand-500"
         >
-          <ArrowLeft className="h-4 w-4" /> Volver al inicio
+          <ArrowLeft className="h-4 w-4" /> {t("form.backHome")}
         </Link>
 
         <div className="mt-4 text-center">
-          <h1 className="text-3xl font-extrabold sm:text-4xl">Solicita tu limpieza</h1>
-          <p className="mx-auto mt-3 max-w-xl text-gray-600">
-            Completa el formulario y te contactaremos para confirmar la fecha y hora. Podrás darle
-            seguimiento desde tu portal.
-          </p>
+          <h1 className="text-3xl font-extrabold sm:text-4xl">{t("form.title")}</h1>
+          <p className="mx-auto mt-3 max-w-xl text-gray-600">{t("form.subtitle")}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="card mt-6 p-6 sm:p-8">
           <div className="grid gap-5">
             {/* Tipo de servicio — radio cards */}
-            <div>
-              <span className="label">
-                Tipo de servicio <span className="text-red-500">*</span>
-              </span>
+            <fieldset>
+              <legend className="label">
+                {t("form.tipoServicio")} <span className="text-red-500">*</span>
+              </legend>
               <div className="grid gap-3 sm:grid-cols-3">
                 {TIPOS_SERVICIO.map((opt) => {
                   const Icon = ICON_BY_TIPO[opt.value];
                   const selected = tipo === opt.value;
+                  const inputId = `tipo-${opt.value}`;
                   return (
                     <label
                       key={opt.value}
+                      htmlFor={inputId}
                       className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition ${
                         selected
                           ? "border-brand-500 bg-brand-50"
@@ -163,6 +170,7 @@ export default function FormularioSolicitud() {
                       }`}
                     >
                       <input
+                        id={inputId}
                         type="radio"
                         value={opt.value}
                         className="sr-only"
@@ -171,30 +179,34 @@ export default function FormularioSolicitud() {
                       <Icon
                         className={`h-7 w-7 ${selected ? "text-brand-500" : "text-gray-400"}`}
                       />
-                      <span className="text-sm font-semibold text-navy-800">{opt.label}</span>
+                      <span className="text-sm font-semibold text-navy-800">
+                        {tipoServicioLabel(opt.value, locale)}
+                      </span>
                     </label>
                   );
                 })}
               </div>
               {errors.tipoServicio && (
                 <p className="field-error" role="alert">
-                  {errors.tipoServicio.message}
+                  {translateText(errors.tipoServicio.message ?? "", locale)}
                 </p>
               )}
-            </div>
+            </fieldset>
 
             {/* Frecuencia — plan recurrente */}
-            <div>
-              <span className="label">
+            <fieldset>
+              <legend className="label">
                 <Repeat className="mr-1 inline h-4 w-4 text-brand-500" />
-                ¿Con qué frecuencia? <span className="text-red-500">*</span>
-              </span>
+                {t("form.frecuencia")} <span className="text-red-500">*</span>
+              </legend>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {FRECUENCIAS.map((opt) => {
                   const selected = frecuencia === opt.value;
+                  const inputId = `frec-${opt.value}`;
                   return (
                     <label
                       key={opt.value}
+                      htmlFor={inputId}
                       className={`cursor-pointer rounded-lg border-2 px-3 py-2.5 text-center text-sm font-semibold transition ${
                         selected
                           ? "border-brand-500 bg-brand-50 text-brand-600"
@@ -202,68 +214,87 @@ export default function FormularioSolicitud() {
                       }`}
                     >
                       <input
+                        id={inputId}
                         type="radio"
                         value={opt.value}
                         className="sr-only"
                         {...register("frecuencia")}
                       />
-                      {opt.corto}
+                      {frecuenciaLabelFull(opt.value, locale)}
                     </label>
                   );
                 })}
               </div>
               {frecuencia && frecuencia !== "unica" && (
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Agendaremos automáticamente la siguiente visita al completar cada limpieza.
-                </p>
+                <p className="mt-1.5 text-xs text-gray-500">{t("form.frecuenciaHint")}</p>
               )}
               {errors.frecuencia && (
                 <p className="field-error" role="alert">
-                  {errors.frecuencia.message}
+                  {translateText(errors.frecuencia.message ?? "", locale)}
                 </p>
               )}
-            </div>
+            </fieldset>
 
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Nombre completo" htmlFor="nombre" required error={errors.nombre?.message}>
+              <Field
+                label={t("form.nombre")}
+                htmlFor="nombre"
+                required
+                error={errors.nombre?.message ? translateText(errors.nombre.message, locale) : undefined}
+              >
                 <input
                   id="nombre"
                   type="text"
                   autoComplete="name"
-                  placeholder="Tu nombre"
+                  placeholder={t("form.nombre.ph")}
                   className={`input ${errors.nombre ? "input-error" : ""}`}
                   {...register("nombre")}
                 />
               </Field>
 
-              <Field label="Teléfono" htmlFor="telefono" required error={errors.telefono?.message}>
+              <Field
+                label={t("form.telefono")}
+                htmlFor="telefono"
+                required
+                error={errors.telefono?.message ? translateText(errors.telefono.message, locale) : undefined}
+              >
                 <input
                   id="telefono"
                   type="tel"
                   autoComplete="tel"
-                  placeholder="(555) 123-4567"
+                  placeholder={t("form.telefono.ph")}
                   className={`input ${errors.telefono ? "input-error" : ""}`}
                   {...register("telefono")}
                 />
               </Field>
             </div>
 
-            <Field label="Correo" htmlFor="email" hint="(opcional)" error={errors.email?.message}>
+            <Field
+              label={t("form.email")}
+              htmlFor="email"
+              required
+              error={errors.email?.message ? translateText(errors.email.message, locale) : undefined}
+            >
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
-                placeholder="tu@correo.com"
+                placeholder="you@email.com"
                 className={`input ${errors.email ? "input-error" : ""}`}
                 {...register("email")}
               />
             </Field>
 
-            <Field label="Dirección" htmlFor="direccion" required error={errors.direccion?.message}>
+            <Field
+              label={t("form.direccion")}
+              htmlFor="direccion"
+              required
+              error={errors.direccion?.message ? translateText(errors.direccion.message, locale) : undefined}
+            >
               <textarea
                 id="direccion"
                 rows={2}
-                placeholder="Calle, número, colonia, referencias…"
+                placeholder={t("form.direccion.ph")}
                 className={`input ${errors.direccion ? "input-error" : ""}`}
                 {...register("direccion")}
               />
@@ -271,7 +302,9 @@ export default function FormularioSolicitud() {
 
             {/* Ubicación en el mapa (Leaflet) */}
             <div>
-              <span className="label">Ubicación en el mapa <span className="font-normal text-gray-400">(opcional)</span></span>
+              <span id="mapa-ubicacion-label" className="label">
+                {t("form.ubicacion")} <span className="font-normal text-gray-400">{t("common.optional")}</span>
+              </span>
               <MapaUbicacion
                 value={ubicacion}
                 onChange={onUbicacion}
@@ -281,10 +314,10 @@ export default function FormularioSolicitud() {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <Field
-                label="Fecha deseada"
+                label={t("form.fechaDeseada")}
                 htmlFor="fechaDeseada"
                 required
-                error={errors.fechaDeseada?.message}
+                error={errors.fechaDeseada?.message ? translateText(errors.fechaDeseada.message, locale) : undefined}
               >
                 <input
                   id="fechaDeseada"
@@ -296,10 +329,10 @@ export default function FormularioSolicitud() {
               </Field>
 
               <Field
-                label="Hora deseada"
+                label={t("form.horaDeseada")}
                 htmlFor="horaDeseada"
                 required
-                error={errors.horaDeseada?.message}
+                error={errors.horaDeseada?.message ? translateText(errors.horaDeseada.message, locale) : undefined}
               >
                 <input
                   id="horaDeseada"
@@ -311,16 +344,16 @@ export default function FormularioSolicitud() {
             </div>
 
             <Field
-              label="Notas adicionales"
+              label={t("form.notas")}
               htmlFor="notas"
-              hint="(opcional)"
-              error={errors.notas?.message}
+              hint={t("common.optional")}
+              error={errors.notas?.message ? translateText(errors.notas.message, locale) : undefined}
             >
               <textarea
                 id="notas"
                 rows={3}
                 maxLength={500}
-                placeholder="Cuéntanos cualquier detalle (mascotas, accesos, áreas prioritarias…)"
+                placeholder={t("form.notas.ph")}
                 className={`input ${errors.notas ? "input-error" : ""}`}
                 {...register("notas")}
               />
@@ -336,18 +369,16 @@ export default function FormularioSolicitud() {
             <Button type="submit" variant="gold" size="lg" disabled={isSubmitting} className="w-full">
               {isSubmitting ? (
                 <>
-                  <Spinner className="h-5 w-5" /> Enviando…
+                  <Spinner className="h-5 w-5" /> {t("common.sending")}
                 </>
               ) : (
                 <>
-                  <Send className="h-5 w-5" /> Solicitar limpieza
+                  <Send className="h-5 w-5" /> {t("form.submit")}
                 </>
               )}
             </Button>
 
-            <p className="text-center text-xs text-gray-400">
-              Al enviar aceptas que te contactemos para coordinar tu servicio.
-            </p>
+            <p className="text-center text-xs text-gray-400">{t("form.quoteNote")}</p>
           </div>
         </form>
       </div>

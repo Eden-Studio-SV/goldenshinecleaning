@@ -1,10 +1,24 @@
 import type { Timestamp } from "firebase/firestore";
 
-/** Tipo de servicio de limpieza ofrecido. */
-export type TipoServicio = "residencial" | "comercial" | "profunda";
+/**
+ * Tipo de servicio de limpieza ofrecido.
+ * Los servicios adicionales (post_construccion, mudanza, airbnb) se añadieron
+ * sobre el catálogo original; `recurrente` NO es un servicio: la recurrencia
+ * se modela con `Frecuencia` (semanal/quincenal/mensual) sobre cualquier tipo.
+ */
+export type TipoServicio =
+  | "post_construccion"
+  | "mudanza"
+  | "airbnb"
+  | "residencial"
+  | "comercial"
+  | "profunda";
 
 /** Frecuencia de un plan de limpieza. `unica` = sin recurrencia. */
 export type Frecuencia = "unica" | "semanal" | "quincenal" | "mensual";
+
+/** Idioma de las comunicaciones asociadas a una solicitud. */
+export type LocaleSolicitud = "en" | "es";
 
 /**
  * Estado de una solicitud dentro de su ciclo de vida.
@@ -69,6 +83,8 @@ export interface Solicitud {
   fechaDeseada: string; // YYYY-MM-DD
   horaDeseada: string; // HH:mm
   frecuencia: Frecuencia;
+  /** Ausente en documentos históricos; se interpreta como inglés. */
+  locale?: LocaleSolicitud;
   serieId?: string | null; // agrupa las visitas de un plan recurrente
   notas?: string;
   estado: EstadoSolicitud;
@@ -90,6 +106,7 @@ export interface SolicitudInput {
   fechaDeseada: string;
   horaDeseada: string;
   frecuencia: Frecuencia;
+  locale?: LocaleSolicitud;
   notas?: string;
 }
 
@@ -97,6 +114,9 @@ export const TIPOS_SERVICIO: { value: TipoServicio; label: string }[] = [
   { value: "residencial", label: "Limpieza Residencial" },
   { value: "comercial", label: "Limpieza Comercial" },
   { value: "profunda", label: "Limpieza Profunda" },
+  { value: "post_construccion", label: "Limpieza Post-Construcción" },
+  { value: "mudanza", label: "Limpieza por Mudanza" },
+  { value: "airbnb", label: "Limpieza Airbnb / Rental" },
 ];
 
 export const FRECUENCIAS: { value: Frecuencia; label: string; corto: string }[] = [

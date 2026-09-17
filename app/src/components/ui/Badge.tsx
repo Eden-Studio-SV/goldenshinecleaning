@@ -1,5 +1,5 @@
 import type { EstadoSolicitud } from "@/types";
-import { ESTADO_LABEL } from "@/types";
+import { useTranslation, estadoLabel } from "@/i18n";
 
 const STYLE: Record<EstadoSolicitud, string> = {
   pendiente: "bg-amber-100 text-amber-800 ring-amber-200",
@@ -11,11 +11,12 @@ const STYLE: Record<EstadoSolicitud, string> = {
 };
 
 export function EstadoBadge({ estado }: { estado: EstadoSolicitud }) {
+  const { locale } = useTranslation();
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${STYLE[estado]}`}
     >
-      {ESTADO_LABEL[estado]}
+      {estadoLabel(estado, locale)}
     </span>
   );
 }

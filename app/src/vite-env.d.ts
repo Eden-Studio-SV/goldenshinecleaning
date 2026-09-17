@@ -10,6 +10,11 @@ interface ImportMetaEnv {
   readonly VITE_RECAPTCHA_SITE_KEY?: string;
   // Correos de administradores autorizados (separados por coma).
   readonly VITE_ADMIN_EMAILS?: string;
+  // Solo desarrollo: cuando es "true" conecta los emuladores locales de
+   // Firebase locales. Nunca activar en producción.
+   readonly VITE_USE_EMULATORS?: string;
+   readonly VITE_FIRESTORE_EMULATOR_PORT?: string;
+   readonly VITE_AUTH_EMULATOR_PORT?: string;
 }
 
 interface ImportMeta {

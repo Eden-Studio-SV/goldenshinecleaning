@@ -1,73 +1,117 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // Administradores autorizados (panel). Mantener en sync con VITE_ADMIN_EMAILS.
+    function isSignedIn() { return request.auth != null; }
+    // Mantener sincronizado con VITE_ADMIN_EMAILS. La allowlist no se relaja
+    // para emuladores ni pruebas.
     function isAdmin() {
       return isSignedIn()
         && request.auth.token.email_verified == true
         && request.auth.token.email in ['info@edenstudio.dev'];
     }
 
-    // Perfil del cliente: cada quien gestiona el suyo; el admin puede leer.
+    function tipoServicioValido(v) {
+      return v in ['residencial', 'comercial', 'profunda',
+        'post_construccion', 'mudanza', 'airbnb'];
+    }
+    function frecuenciaValida(v) { return v in ['unica', 'semanal', 'quincenal', 'mensual']; }
+    function fechaValida(v) { return v is string && v.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function horaValida(v) {
+      return v is string && v.matches('^(0[89]|1[0-8]):[0-5][0-9]$|^19:00$');
+    }
+    function correoValido(v) {
+      return v is string && v.size() > 0 && v.size() <= 160
+        && v.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+    }
+    function ubicacionValida(v) {
+      return v == null || (v is map && v.keys().hasOnly(['lat', 'lng'])
+        && v.lat is number && v.lng is number
+        && v.lat >= -90 && v.lat <= 90 && v.lng >= -180 && v.lng <= 180);
+    }
+    function propuestaValida(v, actor) {
+      return v is map
+        && v.keys().hasOnly(['fecha', 'hora', 'por', 'motivo', 'creadaEn'])
+        && v.keys().hasAll(['fecha', 'hora', 'por'])
+        && v.por == actor && fechaValida(v.fecha) && horaValida(v.hora)
+        && (!('motivo' in v.keys()) || v.motivo == null || (v.motivo is string && v.motivo.size() <= 300))
+        && (!('creadaEn' in v.keys()) || v.creadaEn is timestamp);
+    }
+    function payloadNuevoValido() {
+      return request.resource.data.keys().hasOnly([
+          'clienteId', 'clienteEmail', 'nombre', 'telefono', 'email', 'tipoServicio',
+          'direccion', 'ubicacion', 'fechaDeseada', 'horaDeseada', 'frecuencia',
+          'locale', 'serieId', 'notas', 'estado', 'creadoEn'
+        ])
+        && request.resource.data.keys().hasAll([
+          'clienteId', 'clienteEmail', 'nombre', 'telefono', 'email', 'tipoServicio',
+          'direccion', 'fechaDeseada', 'horaDeseada', 'frecuencia', 'estado'
+        ])
+        && request.resource.data.nombre is string && request.resource.data.nombre.size() >= 2 && request.resource.data.nombre.size() <= 80
+        && request.resource.data.telefono is string && request.resource.data.telefono.size() >= 8 && request.resource.data.telefono.size() <= 30
+        && correoValido(request.resource.data.email)
+        && request.resource.data.clienteEmail is string && request.resource.data.clienteEmail.size() > 0 && request.resource.data.clienteEmail.size() <= 160
+        && request.resource.data.direccion is string && request.resource.data.direccion.size() >= 5 && request.resource.data.direccion.size() <= 200
+        && tipoServicioValido(request.resource.data.tipoServicio) && frecuenciaValida(request.resource.data.frecuencia)
+        && fechaValida(request.resource.data.fechaDeseada) && horaValida(request.resource.data.horaDeseada)
+        && (!('ubicacion' in request.resource.data.keys()) || ubicacionValida(request.resource.data.ubicacion))
+        && (!('notas' in request.resource.data.keys()) || (request.resource.data.notas is string && request.resource.data.notas.size() <= 500))
+        && (!('locale' in request.resource.data.keys()) || (request.resource.data.locale is string && request.resource.data.locale in ['en', 'es']))
+        && (!('serieId' in request.resource.data.keys()) || request.resource.data.serieId == null || (request.resource.data.serieId is string && request.resource.data.serieId.size() > 0 && request.resource.data.serieId.size() <= 120));
+    }
+    function soloCambia(campos) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos); }
+    function cancelacionClienteValida() {
+      return resource.data.estado in ['pendiente', 'agendada', 'reprogramacion']
+        && request.resource.data.estado == 'cancelada'
+        && soloCambia(['estado', 'motivo', 'actualizadoEn']);
+    }
+    function propuestaClienteValida() {
+      return resource.data.estado == 'agendada'
+        && request.resource.data.estado == 'reprogramacion'
+        && request.resource.data.estadoPrevio == 'agendada'
+        && propuestaValida(request.resource.data.propuesta, 'cliente')
+        && soloCambia(['estado', 'estadoPrevio', 'propuesta', 'actualizadoEn']);
+    }
+    function respuestaClienteValida() {
+      return resource.data.estado == 'reprogramacion'
+        && resource.data.propuesta is map && resource.data.propuesta.por == 'admin'
+        && ((request.resource.data.estado == 'agendada'
+            && request.resource.data.fechaDeseada == resource.data.propuesta.fecha
+            && request.resource.data.horaDeseada == resource.data.propuesta.hora
+            && request.resource.data.propuesta == null && request.resource.data.estadoPrevio == null
+            && soloCambia(['estado', 'fechaDeseada', 'horaDeseada', 'propuesta', 'estadoPrevio', 'actualizadoEn']))
+          || (request.resource.data.estado == resource.data.estadoPrevio
+            && resource.data.estadoPrevio in ['pendiente', 'agendada']
+            && request.resource.data.propuesta == null && request.resource.data.estadoPrevio == null
+            && soloCambia(['estado', 'propuesta', 'estadoPrevio', 'actualizadoEn'])));
+    }
+
     match /clientes/{uid} {
       allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
-      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow create: if isSignedIn() && request.auth.uid == uid
+        && request.resource.data.email is string && request.resource.data.nombre is string;
+      allow update: if isSignedIn() && request.auth.uid == uid && request.resource.data.email == resource.data.email;
       allow delete: if false;
     }
 
     match /solicitudes/{id} {
-
-      // Forma válida de una solicitud nueva creada por un cliente.
-      function datosValidos() {
-        return request.resource.data.estado == "pendiente"
-          && request.resource.data.tipoServicio in ["residencial", "comercial", "profunda"]
-          && request.resource.data.frecuencia in ["unica", "semanal", "quincenal", "mensual"]
-          && request.resource.data.nombre is string
-          && request.resource.data.nombre.size() > 0
-          && request.resource.data.telefono is string
-          && request.resource.data.telefono.size() >= 8
-          && request.resource.data.direccion is string
-          && request.resource.data.direccion.size() > 0
-          && request.resource.data.fechaDeseada is string
-          && request.resource.data.horaDeseada is string;
-      }
-
-      // Transiciones que el dueño (cliente) puede hacer sobre su solicitud.
-      // El admin no pasa por aquí (tiene control total).
-      function clienteTransicionOk() {
-        let from = resource.data.estado;
-        let to = request.resource.data.estado;
-        return (from == "pendiente" && to == "cancelada")
-          || (from == "agendada" && (to == "reprogramacion" || to == "cancelada"))
-          || (from == "reprogramacion" && (to == "agendada" || to == "pendiente" || to == "cancelada"));
-      }
-
-      // Crear: el admin (p. ej. la siguiente visita de un plan recurrente) o un
-      // cliente autenticado creando su propia solicitud válida.
-      allow create: if isAdmin()
-        || (isSignedIn()
-            && request.resource.data.clienteId == request.auth.uid
-            && datosValidos());
-
-      // Leer: admin todo; cliente solo lo suyo.
-      allow read: if isAdmin()
-        || (isSignedIn() && resource.data.clienteId == request.auth.uid);
-
-      // Actualizar: admin sin restricción; el dueño solo según el ciclo de vida
-      // permitido y sin cambiar de dueño.
-      allow update: if isAdmin()
-        || (isSignedIn()
-            && resource.data.clienteId == request.auth.uid
-            && request.resource.data.clienteId == resource.data.clienteId
-            && clienteTransicionOk());
-
-      // Nunca borrar desde el cliente.
+      allow create: if isAdmin() || (isSignedIn()
+        && request.resource.data.clienteId == request.auth.uid
+        && request.resource.data.clienteEmail == request.auth.token.email
+        && request.resource.data.estado == 'pendiente' && payloadNuevoValido());
+      allow read: if isAdmin() || (isSignedIn() && resource.data.clienteId == request.auth.uid);
+      allow update: if isAdmin() || (isSignedIn()
+        && resource.data.clienteId == request.auth.uid
+        && (cancelacionClienteValida() || propuestaClienteValida() || respuestaClienteValida()));
       allow delete: if false;
+    }
+
+    // Solo Firebase Functions (Admin SDK) puede gestionar la entrega de email.
+    match /mailDeliveries/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /mailRateLimits/{document=**} {
+      allow read, write: if false;
     }
   }
 }
