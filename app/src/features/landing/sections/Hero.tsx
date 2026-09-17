@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, MapPin, Clock, Star } from "lucide-react";
+import { ArrowRight, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { HERO } from "../content";
 import { useTranslation } from "@/i18n";
