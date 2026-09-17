@@ -27,7 +27,7 @@ test.describe("Landing — secciones y contenido", () => {
     await page.goto("/");
     // Hero
     await expect(page.getByRole("heading", { name: /Cleaning for your home, move, or short-term rental/i })).toBeVisible();
-    await expect(page.locator("#inicio").getByText(/Boston, Massachusetts/i)).toBeVisible();
+    await expect(page.locator("#inicio").getByText(/Boston, MA/i)).toBeVisible();
     // Servicios
     await expect(page.getByRole("heading", { name: /Cleaning for every space/i })).toBeVisible();
     // Seis servicios del brief (recurrente se modela como frecuencia, no
@@ -58,7 +58,7 @@ test.describe("Landing — secciones y contenido", () => {
     });
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /Limpieza para tu hogar, mudanza o renta temporal/i })).toBeVisible();
-    await expect(page.locator("#inicio").getByText(/Boston, Massachusetts/i)).toBeVisible();
+    await expect(page.locator("#inicio").getByText(/Boston, MA/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: /Limpieza para cada espacio/i })).toBeVisible();
     await expect(page.getByText("Limpieza Residencial").first()).toBeVisible();
     await expect(page.getByText("Limpieza Post-Construcción").first()).toBeVisible();

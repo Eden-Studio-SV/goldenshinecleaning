@@ -10,7 +10,7 @@ export function Hero() {
   return (
     <section id="inicio" className="relative min-h-[90vh] bg-slate-50 flex flex-col justify-end">
       {/* Background Image */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0" aria-hidden="true">
         <img
           src="/hero-bg.jpg"
           alt="Professional home cleaning"

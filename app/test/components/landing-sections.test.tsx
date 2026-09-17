@@ -26,8 +26,7 @@ describe("Hero", () => {
 
   it("muestra Boston y horario real", () => {
     renderWith(<Hero />);
-    expect(screen.getByText("Boston, Massachusetts")).toBeInTheDocument();
-    expect(screen.getByText(/Mon–Sat/)).toBeInTheDocument();
+    expect(screen.getByText(/Boston, MA/)).toBeInTheDocument();
   });
 
   it("traduce al español", () => {

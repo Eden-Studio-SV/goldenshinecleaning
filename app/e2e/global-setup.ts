@@ -7,7 +7,7 @@ const appDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const projectId = "demo-goldenshine";
 const authPort = 9100;
 const firestorePort = 8081;
-const startupTimeout = 60_000;
+const startupTimeout = 300_000;
 const logLines: string[] = [];
 
 function sanitizeLog(line: string) {

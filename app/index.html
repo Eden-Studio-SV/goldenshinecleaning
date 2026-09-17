@@ -23,6 +23,46 @@
 
 
 
+    <!-- Structured Data (JSON-LD) for LocalBusiness SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Golden Shine Cleaning Service",
+        "description": "Professional residential, Airbnb, deep cleaning, and post-construction cleaning services in Boston, MA.",
+        "image": "https://goldenshinecleaning.com/hero-bg.jpg",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Boston",
+          "addressRegion": "MA",
+          "addressCountry": "US"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "42.3601",
+          "longitude": "-71.0589"
+        },
+        "url": "https://goldenshinecleaning.com",
+        "telephone": "",
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday"
+            ],
+            "opens": "08:00",
+            "closes": "19:00"
+          }
+        ],
+        "priceRange": "$$"
+      }
+    </script>
+
     <!--
       Sincroniza el idioma persistido antes del primer render para evitar un
       "flash" de idioma incorrecto. El valor lo gestiona src/i18n (localStorage

@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { render, type RenderOptions } from "@testing-library/react";
+import { HelmetProvider } from "react-helmet-async";
 import { I18nProvider, type Locale } from "@/i18n";
 import "./setup";
 
@@ -32,9 +33,11 @@ export function makeWrapper(
 ) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <MemoryRouter initialEntries={initialEntries}>
-        <I18nProvider initialLocale={locale}>{children}</I18nProvider>
-      </MemoryRouter>
+      <HelmetProvider>
+        <MemoryRouter initialEntries={initialEntries}>
+          <I18nProvider initialLocale={locale}>{children}</I18nProvider>
+        </MemoryRouter>
+      </HelmetProvider>
     );
   };
 }
