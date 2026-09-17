@@ -20,7 +20,7 @@ export function Hero() {
         <div className="absolute inset-0 bg-slate-900/10 mix-blend-multiply" />
       </div>
 
-      <div className="container-app relative z-10 pb-12 lg:pb-20 pt-32">
+      <div className="container-app relative z-10 pb-24 lg:pb-32 pt-32 xl:pt-40">
         <div className="grid lg:grid-cols-12 gap-8">
           {/* Main Card Overlay */}
           <div className="lg:col-span-7 xl:col-span-6 bg-brand-500 text-white rounded-[2rem] p-8 md:p-12 shadow-2xl animate-fade-in-up">
@@ -28,7 +28,7 @@ export function Hero() {
               <ShieldCheck className="h-5 w-5" /> {t("hero.badge")}
             </span>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-6">
+            <h1 className="text-white text-4xl md:text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6">
               {t(HERO.tituloKey)}
             </h1>
 
