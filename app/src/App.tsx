@@ -4,6 +4,7 @@ import PublicLayout from "@/components/layout/PublicLayout";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import { FullScreenLoader } from "@/components/ui/Spinner";
 import LandingPage from "@/features/landing/LandingPage";
+import ServicesPage from "@/features/landing/ServicesPage";
 
 // La landing va en el bundle inicial (sin Firebase). Todo lo autenticado
 // —formulario, portal de clientes y panel— se carga bajo AuthArea de forma
@@ -17,6 +18,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<PublicLayout />}>
           <Route index element={<LandingPage />} />
+          <Route path="servicios" element={<ServicesPage />} />
         </Route>
         <Route
           path="/*"

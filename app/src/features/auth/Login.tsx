@@ -75,52 +75,58 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-navy-900 px-5 py-12">
-      <div className="w-full max-w-sm">
-        <div className="flex justify-center">
-          <Brand onDark />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-brand-50 px-5 py-12">
+      <div className="w-full max-w-[420px] animate-fade-in-up">
+        <div className="flex justify-center mb-8">
+          <Brand />
         </div>
 
-        <div className="card mt-6 p-7">
-          <h1 className="text-center text-xl font-bold text-navy-800">{t("login.title")}</h1>
-          <p className="mt-1 text-center text-sm text-gray-500">{t("login.subtitle")}</p>
+        <div className="relative bg-white rounded-[2.5rem] shadow-2xl p-8 sm:p-10 border border-slate-100/50">
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-50/50 to-transparent rounded-[2.5rem] pointer-events-none" />
+          
+          <div className="relative z-10">
+            <h1 className="text-center text-2xl font-extrabold text-slate-900">{t("login.title")}</h1>
+            <p className="mt-3 text-center text-base text-slate-500">{t("login.subtitle")}</p>
 
-          {!isFirebaseConfigured && (
-            <div className="mt-5 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-              <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{t("login.firebaseNotConfigured")}</span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={onGoogle}
-            disabled={busy}
-            className="mt-6 flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {busy ? (
-              <>
-                <Spinner className="h-5 w-5 text-brand-500" /> {t("login.connecting")}
-              </>
-            ) : (
-              <>
-                <GoogleIcon /> {t("login.continueGoogle")}
-              </>
+            {!isFirebaseConfigured && (
+              <div className="mt-6 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 shadow-sm">
+                <Info className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+                <span className="font-medium leading-relaxed">{t("login.firebaseNotConfigured")}</span>
+              </div>
             )}
-          </button>
 
-          {error && (
-            <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
-              {error}
+            <button
+              type="button"
+              onClick={onGoogle}
+              disabled={busy}
+              className="mt-8 flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white text-base font-bold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+            >
+              {busy ? (
+                <>
+                  <Spinner className="h-6 w-6 text-brand-500" /> {t("login.connecting")}
+                </>
+              ) : (
+                <>
+                  <GoogleIcon /> {t("login.continueGoogle")}
+                </>
+              )}
+            </button>
+
+            {error && (
+              <div className="mt-6 rounded-2xl bg-red-50 p-4 border border-red-100 shadow-sm" role="alert">
+                <p className="text-sm font-medium text-red-700 text-center">{error}</p>
+              </div>
+            )}
+
+            <p className="mt-8 text-center text-sm font-medium text-slate-400 leading-relaxed">
+              {t("login.noteQuote")}
             </p>
-          )}
-
-          <p className="mt-5 text-center text-xs text-gray-400">{t("login.noteQuote")}</p>
+          </div>
         </div>
 
-        <div className="mt-5 text-center">
-          <Link to="/" className="text-sm text-white/60 hover:text-white">
-            {t("login.backToSite")}
+        <div className="mt-8 text-center">
+          <Link to="/" className="text-sm font-bold text-slate-500 hover:text-brand-600 transition-colors">
+            &larr; {t("login.backToSite")}
           </Link>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, Star } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { HERO } from "../content";
 import { useTranslation } from "@/i18n";
@@ -44,29 +44,6 @@ export function Hero() {
               </Link>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-6 border-t border-brand-400/50">
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <img
-                      key={i}
-                      className="w-10 h-10 rounded-full border-2 border-brand-500 object-cover"
-                      src={`https://i.pravatar.cc/100?img=${i + 10}`}
-                      alt="Customer"
-                    />
-                  ))}
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center text-brand-100">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="w-4 h-4 fill-current text-amber-400" />
-                    ))}
-                    <span className="ml-1 text-sm text-white font-bold">5.0</span>
-                  </div>
-                  <span className="text-xs text-brand-200">Rated Best Over 2k Reviews</span>
-                </div>
-              </div>
-            </div>
           </div>
           
           {/* Special Price Box (Now visible on mobile too) */}

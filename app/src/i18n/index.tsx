@@ -152,6 +152,7 @@ const en: Catalog = {
   // como funciona
   "comoFunciona.eyebrow": "Simple and fast",
   "comoFunciona.title": "How it works",
+  "comoFunciona.sub": "Your clean space is just 3 simple steps away.",
   "comoFunciona.1.title": "Request online",
   "comoFunciona.1.desc": "Fill out the form with the type of cleaning, date and time you want.",
   "comoFunciona.2.title": "We confirm date and time",
@@ -526,6 +527,7 @@ const es: Catalog = {
   // como funciona
   "comoFunciona.eyebrow": "Simple y rápido",
   "comoFunciona.title": "Cómo funciona",
+  "comoFunciona.sub": "Tu espacio limpio está a solo 3 sencillos pasos.",
   "comoFunciona.1.title": "Solicitas en línea",
   "comoFunciona.1.desc": "Completas el formulario con el tipo de limpieza, fecha y hora deseada.",
   "comoFunciona.2.title": "Confirmamos fecha y hora",

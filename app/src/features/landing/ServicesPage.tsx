@@ -1,34 +1,32 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
-import { SERVICIOS, SERVICIO_RECURRENTE } from "../content";
-import { SectionHead } from "./SectionHead";
+import { SERVICIOS, SERVICIO_RECURRENTE } from "./content";
 import { useTranslation } from "@/i18n";
 import { Button } from "@/components/ui/Button";
-import { useReveal } from "@/hooks/useReveal";
 
-export function Servicios() {
+export default function ServicesPage() {
   const { t } = useTranslation();
-  const { ref, revealClasses } = useReveal();
 
   return (
-    <section id="servicios" className="bg-slate-50 py-24 lg:py-32 relative">
-      <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-white to-transparent pointer-events-none" />
-      <div ref={ref} className={`container-app relative z-10 ${revealClasses}`}>
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <SectionHead
-            eyebrow={t("servicios.eyebrow")}
-            titulo={t("servicios.title")}
-            sub={t("servicios.sub")}
-          />
+    <div className="bg-slate-50 min-h-screen pt-32 pb-24">
+      <div className="container-app">
+        <div className="text-center max-w-2xl mx-auto mb-16 animate-fade-in-up">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">
+            All Cleaning Services
+          </h1>
+          <p className="text-lg text-slate-600">
+            Choose the specific cleaning service that fits your needs. 
+            All our services are backed by our satisfaction guarantee.
+          </p>
         </div>
 
-        <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-12 pt-4 px-4 -mx-4 scrollbar-hide md:mx-auto md:px-0 md:max-w-7xl">
-          {[...SERVICIOS.slice(0, 4), SERVICIO_RECURRENTE].map((s) => {
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+          {[...SERVICIOS, SERVICIO_RECURRENTE].map((s) => {
             const Icon = s.icon;
             return (
               <article
                 key={`${s.id}-${s.frecuencia ?? "unica"}`}
-                className={`snap-center sm:snap-start shrink-0 w-[85vw] sm:w-[350px] lg:w-[400px] relative flex flex-col p-6 sm:p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl bg-white rounded-[2rem] border ${
+                className={`relative flex flex-col p-6 sm:p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl bg-white rounded-[2rem] border animate-fade-in-up ${
                   s.destacado ? "border-brand-500 shadow-xl" : "border-slate-100 shadow-sm"
                 }`}
               >
@@ -83,23 +81,8 @@ export function Servicios() {
               </article>
             );
           })}
-
-          {/* View More Options Card */}
-          <article className="snap-center sm:snap-start shrink-0 w-[85vw] sm:w-[350px] lg:w-[400px] relative flex flex-col justify-center items-center p-6 sm:p-8 bg-brand-50/50 rounded-[2rem] border border-brand-100 border-dashed hover:bg-brand-50 transition-colors">
-            <h3 className="text-xl md:text-2xl font-bold text-brand-700 mb-4 text-center">
-              Looking for something else?
-            </h3>
-            <p className="text-slate-500 mb-8 text-center">
-              We offer a wide range of specialized cleaning services tailored to your needs.
-            </p>
-            <Link to="/servicios" className="block w-full">
-              <Button className="w-full py-6 text-lg rounded-xl font-bold bg-white text-brand-600 border border-brand-200 hover:bg-brand-100 hover:border-brand-300 transition-all shadow-sm">
-                View all options <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
-          </article>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
