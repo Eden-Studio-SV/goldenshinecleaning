@@ -10,10 +10,10 @@ export default function LandingPage() {
   return (
     <>
       <Hero />
+      <Testimonios />
       <Servicios />
       <ComoFunciona />
       <PorQueElegirnos />
-      <Testimonios />
       <ZonasCobertura />
       <CtaFinal />
     </>

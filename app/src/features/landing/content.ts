@@ -148,7 +148,7 @@ export const SERVICIOS: Servicio[] = [
   {
     id: "post_construccion",
     icon: HardHat,
-    image: "https://images.unsplash.com/photo-1504307651254-35680f356f12?auto=format&fit=crop&q=80&w=1600",
+    image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&q=80&w=1600",
     tituloKey: "servicios.post_construccion.title",
     descKey: "servicios.post_construccion.desc",
     incluyeKeys: [

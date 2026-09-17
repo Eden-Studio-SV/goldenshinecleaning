@@ -26,14 +26,13 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
+    "@vis.gl/react-google-maps": "^1.10.0",
     "firebase": "^11.1.0",
-    "leaflet": "^1.9.4",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-helmet-async": "^3.0.0",
     "react-hook-form": "^7.54.2",
-    "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.28.1",
     "zod": "^3.24.1"
   },
@@ -43,7 +42,6 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
-    "@types/leaflet": "^1.9.15",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",

@@ -1,18 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useEffect, useRef, useState, useCallback } from "react";
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  MapMouseEvent,
+} from "@vis.gl/react-google-maps";
 import { LocateFixed, MapPin, AlertTriangle } from "lucide-react";
-import iconUrl from "leaflet/dist/images/marker-icon.png";
-import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
-import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 import type { Ubicacion } from "@/types";
 import { MAPA_DEFAULT } from "@/features/landing/content";
 import { useTranslation } from "@/i18n";
-
-// Arreglo del icono por defecto de Leaflet al empaquetar con Vite.
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
-L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl });
 
 /** Geocodificación inversa best-effort con Nominatim (OpenStreetMap, gratis). */
 async function reverseGeocode(
@@ -35,27 +31,9 @@ async function reverseGeocode(
   }
 }
 
-function ClickHandler({ onPick }: { onPick: (u: Ubicacion) => void }) {
-  useMapEvents({
-    click(e) {
-      onPick({ lat: e.latlng.lat, lng: e.latlng.lng });
-    },
-  });
-  return null;
-}
-
-function Recentrar({ punto }: { punto: Ubicacion | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (punto) map.setView([punto.lat, punto.lng], Math.max(map.getZoom(), 15));
-  }, [punto, map]);
-  return null;
-}
-
 interface Props {
   value: Ubicacion | null;
   onChange: (u: Ubicacion) => void;
-  /** Recibe una dirección aproximada al elegir un punto (best-effort). */
   onDireccion?: (texto: string) => void;
 }
 
@@ -65,6 +43,7 @@ export function MapaUbicacion({ value, onChange, onDireccion }: Props) {
   const [geoError, setGeoError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const centro = value ?? MAPA_DEFAULT.centro;
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
 
   useEffect(() => {
     return () => {
@@ -72,25 +51,28 @@ export function MapaUbicacion({ value, onChange, onDireccion }: Props) {
     };
   }, []);
 
-  const elegir = (u: Ubicacion) => {
-    onChange(u);
-    if (onDireccion) {
-      abortRef.current?.abort();
-      const ac = new AbortController();
-      abortRef.current = ac;
-      reverseGeocode(u.lat, u.lng, locale, ac.signal)
-        .then((txt) => {
-          if (txt) {
-            onDireccion(txt);
-          } else if (!ac.signal.aborted) {
-            setGeoError(t("mapa.fetchError"));
-          }
-        })
-        .catch(() => {
-          if (!ac.signal.aborted) setGeoError(t("mapa.fetchError"));
-        });
-    }
-  };
+  const elegir = useCallback(
+    (u: Ubicacion) => {
+      onChange(u);
+      if (onDireccion) {
+        abortRef.current?.abort();
+        const ac = new AbortController();
+        abortRef.current = ac;
+        reverseGeocode(u.lat, u.lng, locale, ac.signal)
+          .then((txt) => {
+            if (txt) {
+              onDireccion(txt);
+            } else if (!ac.signal.aborted) {
+              setGeoError(t("mapa.fetchError"));
+            }
+          })
+          .catch(() => {
+            if (!ac.signal.aborted) setGeoError(t("mapa.fetchError"));
+          });
+      }
+    },
+    [onChange, onDireccion, locale, t],
+  );
 
   const usarMiUbicacion = () => {
     if (!navigator.geolocation) {
@@ -112,6 +94,12 @@ export function MapaUbicacion({ value, onChange, onDireccion }: Props) {
     );
   };
 
+  const handleMapClick = (e: MapMouseEvent) => {
+    if (e.detail.latLng) {
+      elegir({ lat: e.detail.latLng.lat, lng: e.detail.latLng.lng });
+    }
+  };
+
   return (
     <div role="group" aria-label={t("form.ubicacion")}>
       <div className="mb-2 flex items-center justify-between gap-3">
@@ -127,33 +115,35 @@ export function MapaUbicacion({ value, onChange, onDireccion }: Props) {
         </button>
       </div>
 
-      <div className="h-72 w-full overflow-hidden rounded-xl border border-gray-200">
-        <MapContainer
-          center={[centro.lat, centro.lng]}
-          zoom={value ? 15 : MAPA_DEFAULT.zoom}
-          scrollWheelZoom={false}
-          className="h-full w-full"
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <ClickHandler onPick={elegir} />
-          <Recentrar punto={value} />
-          {value && (
-            <Marker
-              position={[value.lat, value.lng]}
-              draggable
-              eventHandlers={{
-                dragend: (e) => {
-                  const m = e.target as L.Marker;
-                  const { lat, lng } = m.getLatLng();
-                  elegir({ lat, lng });
-                },
-              }}
-            />
-          )}
-        </MapContainer>
+      <div className="h-72 w-full overflow-hidden rounded-xl border border-gray-200 relative">
+        <APIProvider apiKey={apiKey}>
+          <Map
+            defaultCenter={{ lat: centro.lat, lng: centro.lng }}
+            center={value ? { lat: value.lat, lng: value.lng } : undefined}
+            defaultZoom={value ? 15 : MAPA_DEFAULT.zoom}
+            gestureHandling={"greedy"}
+            disableDefaultUI={true}
+            mapId="GOLDEN_SHINE_MAP_ID"
+            onClick={handleMapClick}
+          >
+            {value && (
+              <AdvancedMarker
+                position={{ lat: value.lat, lng: value.lng }}
+                draggable={true}
+                onDragEnd={(e) => {
+                  if (e.latLng) {
+                    elegir({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+                  }
+                }}
+              />
+            )}
+          </Map>
+        </APIProvider>
+        {!apiKey && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center bg-white/20 z-10 text-slate-800 text-xs text-center px-4 font-semibold opacity-70">
+            For Development Purposes Only. <br/>Add VITE_GOOGLE_MAPS_API_KEY to .env to remove this watermark.
+          </div>
+        )}
       </div>
 
       <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-gray-500">
