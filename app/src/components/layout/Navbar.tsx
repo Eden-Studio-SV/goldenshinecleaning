@@ -106,13 +106,13 @@ export function Navbar() {
           </Link>
           <LanguageSwitcher />
           <Link to="/solicitar">
-            <Button variant="gold">{t("nav.requestCleaning")}</Button>
+            <Button variant="primary">{t("nav.requestCleaning")}</Button>
           </Link>
         </nav>
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-navy-800 hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 md:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-800 hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
           aria-expanded={open}
@@ -147,7 +147,7 @@ export function Navbar() {
               <LanguageSwitcher />
             </div>
             <Link to="/solicitar" onClick={() => setOpen(false)} className="mt-1">
-              <Button variant="gold" size="lg" className="w-full">
+              <Button variant="primary" size="lg" className="w-full">
                 {t("nav.requestCleaning")}
               </Button>
             </Link>

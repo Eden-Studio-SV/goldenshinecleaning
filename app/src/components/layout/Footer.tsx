@@ -14,7 +14,7 @@ export function Footer() {
   const hasAnyContact = hasPhone || hasWhatsapp || hasEmail;
 
   return (
-    <footer className="bg-navy-900 text-white/80">
+    <footer className="bg-slate-900 text-white/80">
       <div className="container-app grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2 lg:col-span-1">
           <Brand onDark />
@@ -33,7 +33,7 @@ export function Footer() {
                     href={CONTACTO.telefonoHref!}
                     className="inline-flex items-center gap-2 hover:text-white"
                   >
-                    <Phone className="h-4 w-4 text-gold" /> {CONTACTO.telefono}
+                    <Phone className="h-4 w-4 text-brand-400" /> {CONTACTO.telefono}
                   </a>
                 </li>
               )}
@@ -45,7 +45,7 @@ export function Footer() {
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 hover:text-white"
                   >
-                    <MessageCircle className="h-4 w-4 text-gold" /> {t("footer.whatsapp")}
+                    <MessageCircle className="h-4 w-4 text-brand-400" /> {t("footer.whatsapp")}
                   </a>
                 </li>
               )}
@@ -55,14 +55,14 @@ export function Footer() {
                     href={`mailto:${CONTACTO.email!}`}
                     className="inline-flex items-center gap-2 hover:text-white"
                   >
-                    <Mail className="h-4 w-4 text-gold" /> {CONTACTO.email}
+                    <Mail className="h-4 w-4 text-brand-400" /> {CONTACTO.email}
                   </a>
                 </li>
               )}
             </ul>
           ) : (
             <div className="mt-4 flex items-start gap-2 rounded-lg bg-white/5 p-3 text-xs text-white/60">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
               <span>{t("footer.contactMissing")}</span>
             </div>
           )}
@@ -74,10 +74,10 @@ export function Footer() {
           </h4>
           <ul className="mt-4 space-y-3 text-sm">
             <li className="inline-flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-gold" /> {CONTACTO.ciudad}
+              <MapPin className="h-4 w-4 text-brand-400" /> {CONTACTO.ciudad}
             </li>
             <li className="inline-flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gold" /> {CONTACTO.horario}
+              <Clock className="h-4 w-4 text-brand-400" /> {CONTACTO.horario}
             </li>
           </ul>
         </div>
