@@ -2,14 +2,16 @@ import { MapPin } from "lucide-react";
 import { SectionHead } from "./SectionHead";
 import { ZONAS, CONTACTO } from "../content";
 import { useTranslation } from "@/i18n";
+import { useReveal } from "@/hooks/useReveal";
 
 export function ZonasCobertura() {
   const { t } = useTranslation();
+  const { ref, revealClasses } = useReveal();
 
   return (
-    <section id="cobertura" className="bg-white py-24 lg:py-32">
-      <div className="container-app">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+    <section id="cobertura" className="bg-slate-50 py-24 lg:py-32">
+      <div ref={ref} className={`container-app ${revealClasses}`}>
+        <div className="text-center max-w-2xl mx-auto mb-16">
           <SectionHead
             eyebrow={t("cobertura.eyebrow")}
             titulo={t("cobertura.title")}

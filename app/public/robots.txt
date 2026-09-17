@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://goldenshine.edenstudio.dev/sitemap.xml

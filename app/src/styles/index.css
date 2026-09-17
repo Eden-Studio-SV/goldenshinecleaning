@@ -33,7 +33,7 @@
 
   /* Botones */
   .btn {
-    @apply inline-flex select-none items-center justify-center gap-2 rounded-lg font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-lg font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-primary {
     @apply bg-brand-600 text-white hover:bg-brand-700 hover:shadow-lg hover:-translate-y-0.5 focus-visible:ring-brand-500;

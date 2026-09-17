@@ -366,7 +366,7 @@ export default function FormularioSolicitud() {
               </p>
             )}
 
-            <Button type="submit" variant="gold" size="lg" disabled={isSubmitting} className="w-full">
+            <Button type="submit" variant="primary" size="lg" disabled={isSubmitting} className="w-full">
               {isSubmitting ? (
                 <>
                   <Spinner className="h-5 w-5" /> {t("common.sending")}

@@ -1,15 +1,21 @@
 import { SectionHead } from "./SectionHead";
 import { PASOS } from "../content";
 import { useTranslation } from "@/i18n";
+import { useReveal } from "@/hooks/useReveal";
 
 export function ComoFunciona() {
   const { t } = useTranslation();
+  const { ref, revealClasses } = useReveal();
 
   return (
-    <section id="como-funciona" className="bg-white py-24 lg:py-32">
-      <div className="container-app">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <SectionHead eyebrow={t("comoFunciona.eyebrow")} titulo={t("comoFunciona.title")} />
+    <section id="como-funciona" className="py-24 lg:py-32 bg-white overflow-hidden">
+      <div ref={ref} className={`container-app relative ${revealClasses}`}>
+        <div className="text-center max-w-2xl mx-auto mb-16 lg:mb-24">
+          <SectionHead
+            eyebrow={t("comoFunciona.eyebrow")}
+            titulo={t("comoFunciona.title")}
+            sub={t("comoFunciona.sub")}
+          />
         </div>
 
         <ol className="grid gap-12 md:grid-cols-3 max-w-5xl mx-auto">

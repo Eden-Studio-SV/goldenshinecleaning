@@ -21,14 +21,14 @@ export function Hero() {
       </div>
 
       <div className="container-app relative z-10 pb-24 lg:pb-32 pt-32 xl:pt-40">
-        <div className="grid lg:grid-cols-12 gap-8">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Main Card Overlay */}
-          <div className="lg:col-span-7 xl:col-span-6 bg-brand-500 text-white rounded-[2rem] p-8 md:p-12 shadow-2xl animate-fade-in-up">
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-brand-100 mb-6">
+          <div className="lg:col-span-7 xl:col-span-7 bg-brand-500 text-white rounded-[2rem] p-6 sm:p-8 md:p-12 shadow-2xl animate-fade-in-up">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-brand-100 mb-6">
               <ShieldCheck className="h-5 w-5" /> {t("hero.badge")}
             </span>
 
-            <h1 className="text-white text-4xl md:text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6">
+            <h1 className="text-white text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-6">
               {t(HERO.tituloKey)}
             </h1>
 
@@ -36,9 +36,9 @@ export function Hero() {
               {t(HERO.subtituloKey)}
             </p>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-10">
-              <Link to="/solicitar">
-                <Button className="bg-white text-brand-600 hover:bg-brand-50 rounded-full px-8 py-6 text-lg font-semibold shadow-xl">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-10">
+              <Link to="/solicitar" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-white text-brand-600 hover:bg-brand-50 rounded-full px-8 py-6 text-lg font-semibold shadow-xl">
                   {t(HERO.ctaPrimarioKey)} <ArrowRight className="h-5 w-5 ml-2" />
                 </Button>
               </Link>
@@ -57,22 +57,22 @@ export function Hero() {
                   ))}
                 </div>
                 <div className="flex flex-col">
-                  <div className="flex items-center text-gold">
+                  <div className="flex items-center text-brand-100">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className="w-4 h-4 fill-current" />
+                      <Star key={s} className="w-4 h-4 fill-current text-amber-400" />
                     ))}
-                    <span className="ml-1 text-sm text-white font-semibold">5.0</span>
+                    <span className="ml-1 text-sm text-white font-bold">5.0</span>
                   </div>
-                  <span className="text-xs text-brand-100">Rated Best Over 2k Reviews</span>
+                  <span className="text-xs text-brand-200">Rated Best Over 2k Reviews</span>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Optional right side content (like the special price box in the reference) */}
-          <div className="hidden lg:flex lg:col-span-5 xl:col-span-6 flex-col justify-end items-end pb-8">
-             <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl max-w-sm w-full border border-white/50">
-                <div className="bg-brand-100 text-brand-700 text-sm font-bold text-center py-2 rounded-t-xl -mt-6 -mx-6 mb-4">
+          {/* Special Price Box (Now visible on mobile too) */}
+          <div className="flex lg:col-span-5 xl:col-span-5 flex-col justify-end items-end pb-0 lg:pb-8">
+             <div className="bg-white/95 backdrop-blur-sm p-6 rounded-[1.5rem] shadow-xl w-full max-w-md lg:max-w-sm mx-auto lg:mx-0 lg:ml-auto border border-white/50">
+                <div className="bg-brand-100 text-brand-700 text-sm font-bold text-center py-2 rounded-t-[1rem] -mt-6 -mx-6 mb-4">
                   Special Offer This Month
                 </div>
                 <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">

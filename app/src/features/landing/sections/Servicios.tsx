@@ -4,14 +4,16 @@ import { SERVICIOS, SERVICIO_RECURRENTE } from "../content";
 import { SectionHead } from "./SectionHead";
 import { useTranslation } from "@/i18n";
 import { Button } from "@/components/ui/Button";
+import { useReveal } from "@/hooks/useReveal";
 
 export function Servicios() {
   const { t } = useTranslation();
+  const { ref, revealClasses } = useReveal();
 
   return (
     <section id="servicios" className="bg-slate-50 py-24 lg:py-32 relative">
       <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-white to-transparent pointer-events-none" />
-      <div className="container-app relative z-10">
+      <div ref={ref} className={`container-app relative z-10 ${revealClasses}`}>
         <div className="text-center max-w-2xl mx-auto mb-16">
           <SectionHead
             eyebrow={t("servicios.eyebrow")}
@@ -26,7 +28,7 @@ export function Servicios() {
             return (
               <article
                 key={`${s.id}-${s.frecuencia ?? "unica"}`}
-                className={`relative flex flex-col p-8 sm:p-10 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl bg-white rounded-[2rem] border ${
+                className={`relative flex flex-col p-6 sm:p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl bg-white rounded-[2rem] border ${
                   s.destacado ? "border-brand-500 shadow-xl" : "border-slate-100 shadow-sm"
                 }`}
               >

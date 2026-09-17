@@ -1,9 +1,11 @@
 import { Users, Building2, Briefcase, Home } from "lucide-react";
 import { SectionHead } from "./SectionHead";
 import { useTranslation } from "@/i18n";
+import { useReveal } from "@/hooks/useReveal";
 
 export function Testimonios() {
   const { t } = useTranslation();
+  const { ref, revealClasses } = useReveal();
 
   const audiencias = [
     {
@@ -29,8 +31,8 @@ export function Testimonios() {
   ];
 
   return (
-    <section id="audiencias" className="bg-brand-50 py-24 lg:py-32">
-      <div className="container-app">
+    <section id="audiencias" className="bg-white py-24 lg:py-32 border-t border-slate-100">
+      <div ref={ref} className={`container-app ${revealClasses}`}>
         <div className="text-center max-w-2xl mx-auto mb-16">
           <SectionHead
             eyebrow={t("audiencias.eyebrow")}

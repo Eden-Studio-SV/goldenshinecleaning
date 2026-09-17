@@ -1,17 +1,20 @@
 import { SectionHead } from "./SectionHead";
 import { POR_QUE } from "../content";
 import { useTranslation } from "@/i18n";
+import { useReveal } from "@/hooks/useReveal";
 
 export function PorQueElegirnos() {
   const { t } = useTranslation();
+  const { ref, revealClasses } = useReveal();
 
   return (
-    <section id="por-que" className="bg-slate-50 py-24 lg:py-32">
-      <div className="container-app">
+    <section id="por-que-elegirnos" className="bg-slate-50 py-24 lg:py-32">
+      <div ref={ref} className={`container-app ${revealClasses}`}>
         <div className="text-center max-w-2xl mx-auto mb-16">
           <SectionHead
             eyebrow={t("porQue.eyebrow")}
             titulo={t("porQue.title")}
+            sub={t("porQue.sub")}
           />
         </div>
 

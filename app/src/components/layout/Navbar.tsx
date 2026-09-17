@@ -83,7 +83,7 @@ export function Navbar() {
   const isLanding = pathname === "/";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/20 bg-white/70 backdrop-blur-md shadow-sm transition-all duration-300">
       <div className="container-app flex h-16 items-center justify-between gap-4">
         <Brand />
 
