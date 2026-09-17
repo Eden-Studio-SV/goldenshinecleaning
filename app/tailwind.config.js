@@ -6,27 +6,34 @@ export default {
       colors: {
         // Paleta del proyecto (§5 de la especificación técnica)
         navy: {
-          900: "#1A3A5C", // fondos oscuros, hero, footer
-          800: "#1F3864", // encabezados, panel
+          900: "#1A3A5C", // keeping for some dark text usage if needed
+          800: "#1F3864",
         },
         brand: {
-          // azul de acento / primario
-          50: "#EBF3FB",
-          500: "#2E75B6",
-          600: "#27649C",
-          700: "#1F3864",
+          50: "#EEF2FF",
+          100: "#E0E7FF",
+          200: "#C7D2FE",
+          300: "#A5B4FC",
+          400: "#818CF8",
+          500: "#6366F1", // Indigo
+          600: "#4F46E5",
+          700: "#4338CA",
+          800: "#3730A3",
+          900: "#312E81",
         },
         gold: {
-          DEFAULT: "#E8B23A",
-          dark: "#CD9A28",
+          DEFAULT: "#F59E0B", // updated to a more amber/gold
+          dark: "#D97706",
         },
       },
       fontFamily: {
         sans: [
+          '"Plus Jakarta Sans"',
           "Inter",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
+          "BlinkMacSystemFont",
           "Segoe UI",
           "Roboto",
           "sans-serif",

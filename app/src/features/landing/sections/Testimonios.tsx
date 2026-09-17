@@ -29,24 +29,26 @@ export function Testimonios() {
   ];
 
   return (
-    <section id="audiencias" className="bg-brand-50 py-20 lg:py-24">
+    <section id="audiencias" className="bg-brand-50 py-24 lg:py-32">
       <div className="container-app">
-        <SectionHead
-          eyebrow={t("audiencias.eyebrow")}
-          titulo={t("audiencias.title")}
-          sub={t("audiencias.sub")}
-        />
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <SectionHead
+            eyebrow={t("audiencias.eyebrow")}
+            titulo={t("audiencias.title")}
+            sub={t("audiencias.sub")}
+          />
+        </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
           {audiencias.map((a) => {
             const Icon = a.icon;
             return (
-              <div key={a.tituloKey} className="card p-6">
-                <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-500">
-                  <Icon className="h-6 w-6" />
+              <div key={a.tituloKey} className="bg-white rounded-[1.5rem] p-8 text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-brand-100 text-brand-600 mb-6">
+                  <Icon className="h-8 w-8" />
                 </span>
-                <h3 className="mt-4 text-lg">{t(a.tituloKey)}</h3>
-                <p className="mt-1.5 text-sm text-gray-600">{t(a.descKey)}</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{t(a.tituloKey)}</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">{t(a.descKey)}</p>
               </div>
             );
           })}
