@@ -105,6 +105,8 @@ export interface Servicio {
   /** Frecuencia preseleccionada al solicitar este servicio, si aplica. */
   frecuencia?: Frecuencia;
   icon: LucideIcon;
+  /** URL de la imagen representativa del servicio. */
+  image: string;
   /** Clave i18n del título. */
   tituloKey: string;
   /** Clave i18n de la descripción. */
@@ -124,6 +126,7 @@ export const SERVICIOS: Servicio[] = [
   {
     id: "residencial",
     icon: Home,
+    image: "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&q=80&w=1600",
     tituloKey: "servicios.residencial.title",
     descKey: "servicios.residencial.desc",
     incluyeKeys: [
@@ -136,6 +139,7 @@ export const SERVICIOS: Servicio[] = [
   {
     id: "airbnb",
     icon: BedDouble,
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=1600",
     tituloKey: "servicios.airbnb.title",
     descKey: "servicios.airbnb.desc",
     incluyeKeys: ["servicios.airbnb.0", "servicios.airbnb.1", "servicios.airbnb.2"],
@@ -144,6 +148,7 @@ export const SERVICIOS: Servicio[] = [
   {
     id: "post_construccion",
     icon: HardHat,
+    image: "https://images.unsplash.com/photo-1504307651254-35680f356f12?auto=format&fit=crop&q=80&w=1600",
     tituloKey: "servicios.post_construccion.title",
     descKey: "servicios.post_construccion.desc",
     incluyeKeys: [
@@ -155,6 +160,7 @@ export const SERVICIOS: Servicio[] = [
   {
     id: "profunda",
     icon: Sparkles,
+    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=1600",
     tituloKey: "servicios.profunda.title",
     descKey: "servicios.profunda.desc",
     incluyeKeys: ["servicios.profunda.0", "servicios.profunda.1", "servicios.profunda.2"],
@@ -162,6 +168,7 @@ export const SERVICIOS: Servicio[] = [
   {
     id: "mudanza",
     icon: Truck,
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1600",
     tituloKey: "servicios.mudanza.title",
     descKey: "servicios.mudanza.desc",
     incluyeKeys: ["servicios.mudanza.0", "servicios.mudanza.1", "servicios.mudanza.2"],
@@ -169,6 +176,7 @@ export const SERVICIOS: Servicio[] = [
   {
     id: "comercial",
     icon: Building2,
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1600",
     tituloKey: "servicios.comercial.title",
     descKey: "servicios.comercial.desc",
     incluyeKeys: ["servicios.comercial.0", "servicios.comercial.1", "servicios.comercial.2"],
@@ -183,6 +191,7 @@ export const SERVICIO_RECURRENTE: Servicio = {
   id: "residencial",
   frecuencia: "semanal",
   icon: Repeat,
+  image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=1600",
   tituloKey: "servicios.recurrente.title",
   descKey: "servicios.recurrente.desc",
   incluyeKeys: ["servicios.recurrente.0", "servicios.recurrente.1", "servicios.recurrente.2"],
